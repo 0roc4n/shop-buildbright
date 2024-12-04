@@ -1,0 +1,23 @@
+.menu-pane-visible{
+  max-width: 150px!important
+}
+
+
+
+.item-detail-icon{
+  display: none;
+}
+
+.active-link{
+  color: darkslateblue;
+}
+
+.inner-item{
+  --background-color: var(--ion-color-tertiary)!important;
+  // color: white;
+}
+// ion-content::part(scroll){
+//   padding: 0;
+// }
+
+

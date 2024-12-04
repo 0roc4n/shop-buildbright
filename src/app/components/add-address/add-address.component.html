@@ -1,0 +1,45 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button  (click)="dismiss()" >
+        <ion-icon slot="start"name="chevron-back-outline"></ion-icon>
+        Back
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+
+
+  <ion-row [formGroup]="addAddressForm">
+    <ion-col size="12" size-md="4">
+      <ion-item fill="outline" mode="md" >
+        <ion-icon name="compass-outline" slot="start"></ion-icon>
+        <ion-label position="floating">Label</ion-label>
+        <ion-input type="text" formControlName="label" placeholder="Your Address"></ion-input>
+      </ion-item>
+    </ion-col>
+    <ion-col size="12" size-md="8">
+      <ion-item fill="outline"mode="md" >
+        <ion-icon name="pin-outline"  slot="start"></ion-icon>
+        <ion-label position="floating">Address</ion-label>
+        <ion-input type="text" formControlName="completeAddress" placeholder="Your Address" mode="md" #address></ion-input>
+      </ion-item>
+    </ion-col>
+  </ion-row>
+
+  <ion-card *ngIf="coordinates">
+    <google-map [options]="mapOptions" height="300px" width="100%" [center]="coordinates" (mapClick)="mapClicked($event)"  #map> <!---->
+      <map-marker
+        [position]="coordinates"
+        [icon]="googleMapPins.clientPin"
+        #currentMarker="mapMarker">
+      </map-marker>
+    </google-map>
+  </ion-card>
+
+  <ion-button expand="block" (click)="addAddress()" [disabled]="!addAddressForm.valid">
+    Add Address
+  </ion-button>
+
+</ion-content>

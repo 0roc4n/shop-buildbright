@@ -1,0 +1,47 @@
+<ion-modal [isOpen]="changeAdd">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Select Address</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="changeAdd = !changeAdd">Close</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="ion-padding">
+      <ion-item *ngFor="let add of address; let i = index">
+        <ion-col size="12" (click)="onAddressChange(i)">
+          {{add.completeAddress}}
+        </ion-col>
+      </ion-item>
+    </ion-content>
+  </ng-template>
+</ion-modal>
+
+<ion-split-pane contentId="main" when="xl">
+  <ion-menu contentId="main" menuId="menu-content" side="start" type="push" #mainmenu style="padding:0;">
+    <ion-header >
+     <ion-toolbar color="primary">
+      <ion-icon src="assets/icon/hardware_hq.svg" size="large"></ion-icon>
+     </ion-toolbar>
+    </ion-header>
+    <ion-content scrollbar color="secondary">
+
+        <ng-container *ngFor="let menuItem of menuList">
+           <ion-item [routerLink]="menuItem.route" routerDirection="root" routerLinkActive="active-link" detail="false" (click)="closeMenu()" color="secondary" lines="none"> <!--(click)="gotoRoute(menuItem.route!)"-->
+            <ion-icon slot="start" [name]="menuItem.icon" ></ion-icon>
+            <ion-label>{{menuItem.title}}</ion-label>
+          </ion-item>
+        </ng-container>
+
+        <app-dark-mode-switch></app-dark-mode-switch>
+
+    </ion-content>
+    <ion-footer  style="background-color: var(--ion-color-secondary);">
+      <ion-button (click)="signOut()" expand="block">
+        Logout
+      </ion-button>
+    </ion-footer>
+  </ion-menu>
+  <ion-router-outlet [environmentInjector]="environmentInjector" id="main"></ion-router-outlet>
+</ion-split-pane>

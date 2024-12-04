@@ -1,0 +1,44 @@
+
+<ion-content>
+  <div style="height: 100%; display: flex; align-items: center; justify-content: center;">
+    <ion-card style="height: 50%; display: flex; align-items: center;">
+      <div> 
+        <h1 style="display: flex; justify-content: center;">
+          Enter One Time Pin
+        </h1>
+        <ion-row style="padding-bottom: 50px;">
+          <ion-col size="12">
+            <ng-otp-input style="display: flex; justify-content: center;" [formCtrl]="otpInput"  [config]="config" ></ng-otp-input>
+          </ion-col>
+        </ion-row>
+
+
+        <h4 style="display: flex; justify-content: center; color: red;" *ngIf="otpIncorrect">
+          Incorrect, Please try again
+        </h4>
+        <h4 style="display: flex; justify-content: center;">
+          Expires in 5 minutes
+        </h4>
+        <ion-row style="display: contents;">
+          <ion-col size="auto">
+            <ion-button (click)="cancelled()" fill="clear">
+              Cancel
+            </ion-button>
+          </ion-col>
+          <ion-col size="auto" (click)="resendOtp()">
+            <ion-button (click)="null" fill="clear">
+              Resend OTP
+            </ion-button>
+          </ion-col>
+          <ion-col size="auto" *ngIf="!otpExpired">
+            <ion-button (click)="submit()" fill="clear" [disabled]="!otpInput.valid">
+              Submit
+            </ion-button>
+          </ion-col>
+        </ion-row>
+      </div>
+    </ion-card>
+  </div>
+
+</ion-content>
+

@@ -1,0 +1,79 @@
+<ion-header>
+  <ion-toolbar fill="outline">
+    <ion-buttons slot="start">
+      <ion-button (click)="goToShop()">
+        <ion-icon name="chevron-back-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Orders</ion-title>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-tabs style="contain: none;">
+      <ion-tab-bar slot="top" style="contain:none; overflow:visible;">
+        <ion-tab-button  [selected]="activeTab === status.Pending" (click)="sortData(status.Pending)" style="font-size: medium;contain: none; overflow:visible;">
+          <ion-badge  *ngIf="pending" style="margin-left: 18px;" color="danger">{{pending}}</ion-badge>
+          Pending
+        </ion-tab-button>
+        <ion-tab-button ion-padding [selected]="activeTab === status.Preparing" (click)="sortData(status.Preparing)" style="font-size: medium;contain: none; overflow:visible;">
+          <ion-badge *ngIf="preparing"  style="margin-left: 20px;"  color="danger">{{preparing}}</ion-badge>
+          Preparing
+        </ion-tab-button>
+        <ion-tab-button  [selected]="activeTab === status.OrderReady" (click)="sortData(status.OrderReady)" style="font-size: medium;contain: none;">
+          <ion-badge *ngIf="ready" style="margin-left: 12px;"  color="danger">{{ready}}</ion-badge>
+          Ready
+        </ion-tab-button>
+        <ion-tab-button  [selected]="activeTab === status.Delivered" (click)="sortData(status.Delivered)" style="font-size: medium;contain: none;">
+          <ion-badge  *ngIf="delivered"  style="margin-left: 18px;"  color="danger">{{delivered}}</ion-badge>
+            Received
+        </ion-tab-button>
+      </ion-tab-bar>
+    </ion-tabs>    
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ng-container *ngFor="let data of data|keyvalue:asIsOrder" >
+    <!-- <ng-container *ngFor="let value of convertToArray(data.value)"> -->
+    <ng-container *ngIf="data.value as value">
+      <ng-container *ngIf="(activeTab === value.status || isOrderReady(value.status)) && clientID === value.clientId">
+        <ion-card (click)="viewOrderDetails(value, data.key)">
+          <ion-badge  *ngIf="value.status == 2 && value.deliveryMethod =='pickup'"> Ready for Pick Up!</ion-badge>
+          <ion-badge  *ngIf="value.status == 2 && value.deliveryMethod =='delivery'"> Ready for Delivery!</ion-badge>
+          <ion-badge  *ngIf="value.status == 2.5"> On the Way!</ion-badge>
+          <ion-badge  *ngIf="value.status >= 3 && value.deliveryMethod == 'delivery' && !value.returnProductStatus"> Delivered</ion-badge>
+          <ion-badge  *ngIf="value.status >= 3 && value.deliveryMethod == 'pickup' && !value.returnProductStatus"> Picked Up</ion-badge>
+          <ion-badge  *ngIf="value.status >= 3 && value.returnProductStatus == 1"> Return Pending</ion-badge>
+          <ion-badge  *ngIf="value.status >= 3 && value.returnProductStatus == 5"> Resolved</ion-badge>
+          <ion-item *ngFor="let prod of value.products">
+          
+            <ion-thumbnail slot="start">
+              <img [src]="prod.image">
+            </ion-thumbnail>
+            <ion-label style="margin: 0;">
+              <ion-col size="12">
+                <ion-row>{{prod.name}}</ion-row>
+                <ion-row *ngIf="prod.variants">
+                  <div *ngFor="let name of prod.variants" style="border: 2px solid rgba(0, 0, 0, 0.3); border-radius: 5px; padding: 1px 3px;margin-right: 5px;">
+                    <ion-text style="font-size: small;">{{capitalize(name.variant)}}</ion-text>
+                  </div>
+                </ion-row>
+                <ion-row>
+                  <ion-col>
+                    <ion-text>{{ perItemPrice(prod) | currency:"PHP"}}</ion-text>
+                  </ion-col>
+                  <ion-col class="ion-text-end">
+                    <ion-text>x {{prod.quantity}}</ion-text>
+                  </ion-col>
+                </ion-row>
+              </ion-col>
+            </ion-label>
+          </ion-item>
+          <ion-item lines="none">
+            <ion-label slot="start"> {{ getProductLength(value.products) === 1 ? getProductLength(value.products) + ' Item' : getProductLength(value.products) + ' Items'}}</ion-label>
+            <ion-label slot="end" style="font-weight: bold;">Total {{value.totalPrice | currency:"PHP"}}</ion-label>
+          </ion-item>
+        </ion-card>
+      </ng-container>
+    </ng-container>
+  </ng-container>
+</ion-content>

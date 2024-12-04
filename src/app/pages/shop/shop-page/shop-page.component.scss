@@ -1,0 +1,26 @@
+.prodDetails {
+    font-size: 15px;
+    font-weight: 600;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+    max-width: 100%;
+    height: 35px;
+    margin-bottom: 5px;
+}
+ 
+.title{
+    font-size: larger;
+    font-weight: bolder;
+    margin: 10px;
+}
+
+.catText{
+  margin: 0;
+  font-size: small;
+  font-weight: bold;
+  text-align: center;
+}

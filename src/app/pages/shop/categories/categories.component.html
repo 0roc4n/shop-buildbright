@@ -1,0 +1,30 @@
+
+    <ng-container *ngFor="let cat of categories">
+      <ion-card style="padding: 0;margin:5px; border-radius: 0;" class="container ion-activatable ripple-parent blurred-background" (click)="toggleSubCat(cat)">
+        <ion-ripple-effect></ion-ripple-effect>
+        <ion-img [src]="cat.image.imageRef" style="height: 200px; width: 100%; object-fit: cover;"></ion-img>
+        <div class="overlay" style="z-index: 0;"></div>
+        <div class="centered" style="z-index: 1; width: 100% ;max-width: 380px; padding: 10px 20px;">
+          <h3 style="color:#ffffff;margin: 0; padding: 12px 12px;border-radius: 10px; background-color: rgba(46, 25, 25, 0.8);font-weight: 600;font-size: medium; letter-spacing: 2px;">
+            {{cat.name.toUpperCase()}}
+          </h3>
+        </div>
+      </ion-card>
+      <ng-container *ngIf="cat.sub">
+        <ion-item button (click)="filteredProduct(cat.id, cat.name) ">
+          <ion-ripple-effect></ion-ripple-effect>
+          <div style="display: flex; justify-content: space-between; width: 100%;">
+            <span>See All</span><span style="color:var(--ion-color-secondary); margin-right: 10px;">{{countProductsByCategoryId(cat.id)}} items</span>
+          </div>
+        </ion-item>
+        <ng-container *ngFor="let sub of cat.subcategories">
+          <ion-item button (click)="filteredProductBySub(cat.id, sub.id, sub.name) ">
+            <ion-ripple-effect></ion-ripple-effect>
+            <div style="display: flex; justify-content: space-between; width: 100%;">
+              <span>{{sub.name}}</span><span style="color:var(--ion-color-secondary); margin-right: 10px;">{{countProductsBySubId(cat.id, sub.id)}} items</span>
+            </div>
+          </ion-item>
+        </ng-container>
+      </ng-container>
+    </ng-container>
+  

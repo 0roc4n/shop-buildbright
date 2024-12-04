@@ -1,0 +1,9 @@
+{
+    "/otpApi/*": {
+      "target"       : "https://api.m360.com.ph", 
+      "secure"       : true,
+      "changeOrigin" : true,
+      "logLevel"     : "debug",
+      "pathRewrite": { "^/otpApi": "" }
+    }
+  }

@@ -1,0 +1,252 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button (click)="goToShop()"></ion-back-button>
+    </ion-buttons>
+    <ion-title>
+      Checkout
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <form [formGroup]="orderForm">
+
+    <!-- Address Section -->
+    <ion-card>
+      <ion-row class="ion-padding">
+        <ion-label style="font-weight: bold; font-size: large;">Address</ion-label>
+      </ion-row>
+      <ion-row style="padding: 0px 16px;">
+        <!-- Bind the form control to the selectedAddress -->
+        <ion-input [value]="selectedAddress"></ion-input>
+      </ion-row>
+      <ion-row style="padding: 0px 16px;" *ngIf="reachedMaxDistance">
+        <ion-note color="danger"><i>Delivery not possible for this location.</i></ion-note>
+      </ion-row>
+      
+      <ion-row>
+        <ion-button fill="none" id="add" style="font-size: small;" (click)="changeAdd = !changeAdd">
+          <ion-text color="secondary">Change Address</ion-text>
+        </ion-button>
+      </ion-row>
+    </ion-card>
+  
+    <ion-modal [isOpen]="changeAdd">
+      <ng-template>
+        <ion-header>
+          <ion-toolbar>
+            <ion-title>Select Address</ion-title>
+            <ion-buttons slot="end">
+              <ion-button (click)="changeAdd = !changeAdd">Close</ion-button>
+            </ion-buttons>
+          </ion-toolbar>
+        </ion-header>
+        <ion-content class="ion-padding">
+          <ion-item *ngFor="let add of address; let i = index">
+            <ion-col size="12" (click)="onAddressChange(add)">
+              {{add.completeAddress}}
+            </ion-col>
+          </ion-item>
+        </ion-content>
+      </ng-template>
+    </ion-modal>
+
+    <!-- Items Section from Cart -->
+    <ion-item *ngFor="let prod of selectedProducts" formArrayName="products">
+      <ion-thumbnail slot="start">
+        <img [src]="prod.images ?? prod.image">
+      </ion-thumbnail>
+      <ion-label style="margin: 0;">
+        <ion-col size="12">
+          <ion-row>{{prod.name}}</ion-row>
+          <ion-row *ngIf="prod.variants">
+            <div *ngFor="let name of prod.variants" style="border: 2px solid rgba(0, 0, 0, 0.3); border-radius: 5px; padding: 1px 3px;margin-right: 5px;">
+              <ion-text style="font-size: small;">{{capitalize(name.variant)}}</ion-text>
+            </div>
+          </ion-row>
+          <ion-row>
+            <ion-col>
+              <ion-text>{{ (prod.bulk_price? perItemFromBulk(prod) :prod.price) | currency:"PHP"}}</ion-text>
+            </ion-col>
+            <ion-col class="ion-text-end">
+              <ion-text>x {{prod.quantity}}</ion-text>
+            </ion-col>
+          </ion-row>
+        </ion-col>
+      </ion-label>
+    </ion-item>
+
+    <!-- Message Section -->
+    <ion-card>
+      <ion-item lines="none">
+        <ion-label position="stacked">Message</ion-label>
+        <ion-textarea placeholder="Enter special order instructions" formControlName="message" [autoGrow]="true"></ion-textarea>
+      </ion-item>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-label style="font-weight: bold; font-size: large;">Vouchers</ion-label>
+      </ion-card-header>
+      <ion-card-content>
+        <ion-list>
+          <ion-item lines="none">
+            <ion-select [disabled]="!hasVouchers" [value]="selectedVoucher" placeholder="Select a voucher" (ionChange)="selectVoucher($event)">
+              <ng-container  *ngFor="let voucher of (vouchers$ | async)">
+                <ng-container *ngIf="voucher.voucherDiscountType === 'flat'">
+                  <ion-select-option [value]="voucher">
+                    <h3>
+                      {{voucher.voucherCode}}
+                    </h3>
+                    <h4>
+                      -{{voucher.voucherDiscountValue| currency:"PHP"}}
+                    </h4>
+                  </ion-select-option>
+                </ng-container>
+                <ng-container *ngIf="voucher.voucherDiscountType === 'percentage'">
+                  <ion-select-option [value]="voucher">
+                    <h3>
+                      {{voucher.voucherCode}}
+                    </h3>
+                    <h4>
+                      -{{voucher.voucherDiscountValue}} %
+                    </h4>
+                  </ion-select-option>
+                </ng-container>
+              </ng-container>
+            </ion-select>
+          </ion-item>
+        </ion-list>
+        <ion-button expand="block" (click)="removeVoucher()" *ngIf="selectedVoucher">
+          Remove Voucher
+        </ion-button>
+      </ion-card-content>
+    </ion-card>
+
+        <!-- Delivery Section -->
+        <ion-card>
+          <ion-row class="ion-padding"><ion-label style="font-weight: bold; font-size: large;">Claiming Method</ion-label></ion-row>
+          <ion-radio-group [value]="deliveryMethod" (ionChange)="updateDeliveryMethod($event)">
+            <ion-item lines="none">
+              <ion-icon name="hand-left-outline" slot="start" ></ion-icon>
+              <ion-label>Pickup</ion-label>
+              <ion-radio mode="md" value="pickup" ></ion-radio>
+            </ion-item>
+            <ion-item lines="none">
+              <ion-icon name="car-outline" slot="start" ></ion-icon>
+              <ion-label>Delivery</ion-label>
+              <ion-radio mode="md" value="delivery"></ion-radio>
+            </ion-item>
+          </ion-radio-group>
+        </ion-card>
+
+    <!-- Delivery Selection Section -->
+    <ion-card>
+      <ion-row class="ion-padding">
+        <ion-label style="font-weight: bold; font-size: large;">{{deliveryMethod == 'delivery' ? 'Delivery Date': 'Pick-up Date'}}</ion-label>
+      </ion-row>
+      <ion-radio-group [allowEmptySelection]="false" [value]="deliveryDateValue" (ionChange)="updateDeliveryDate($event)">
+        <ion-item lines="none">
+          <ion-icon name="today-outline" slot="start"></ion-icon>
+          <ion-label>Today</ion-label>
+          <ion-radio mode="md" value="same_day"></ion-radio>
+        </ion-item>
+        
+        <ion-item lines="none">
+          <ion-icon name="calendar-outline" slot="start"></ion-icon>
+          <ion-label>Set Date</ion-label>
+          <ion-radio mode="md" value="set_date"></ion-radio>
+        </ion-item>
+      </ion-radio-group>
+
+      <div style="display: flex; justify-content: center; text-align: center;">
+        <ion-datetime *ngIf="deliveryDateValue === 'set_date' && !confirmedDate" 
+                      displayFormat="MM/DD/YYYY" 
+                      presentation="date" 
+                      [min]="minDate"
+                      formControlName="deliveryDate"
+                      >
+        </ion-datetime>
+      </div>
+      <ion-row style="margin-top: 5px; display: flex; justify-content: center;">
+        <ion-col *ngIf="!confirmedDate && deliveryDateValue === 'set_date' " size="6">
+          <ion-button fill="solid" expand="block" (click)="updateDateValue()"> Confirm</ion-button>
+        </ion-col>
+        <ion-col *ngIf="confirmedDate && deliveryDateValue === 'set_date' " size="10">
+          <ion-button fill="solid" expand="block" (click)="rePickDate()"> {{parseDate(date)}} </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-card>
+
+    <!-- Summary Section -->
+    <ion-card>
+      <ion-row class="ion-padding"><ion-label style="font-weight: bold; font-size: large;">Order Summary</ion-label></ion-row>
+      <ion-row style="padding: 0px 16px;">
+        <ion-col>
+          <ion-text>Subtotal</ion-text>
+        </ion-col>
+        <ion-col class="ion-text-end">
+          <ion-text>{{getSubtotalPrice() | currency:"PHP"}}</ion-text>
+        </ion-col>
+      </ion-row>
+      <ion-row *ngIf="deliveryMethod == 'delivery'" style="padding: 0px 16px;">
+        <ion-col>
+          <ion-text>Delivery Fee</ion-text>
+        </ion-col>
+        <ion-col class="ion-text-end">
+          <ion-text>{{getPricePerDistance() | currency:"PHP"}}</ion-text>
+        </ion-col>
+      </ion-row>
+      <ion-row style="padding: 0px 16px;"  *ngIf="selectedVoucher">
+        <ion-col>
+          Applied Voucher {{selectedVoucher.voucherCode}}
+        </ion-col>
+        <ion-col class="ion-text-end">
+          <ion-text *ngIf="selectedVoucher.voucherDiscountType === 'flat'">
+            - {{selectedVoucher.voucherDiscountValue | currency:"PHP"}}
+          </ion-text>
+          <ion-text *ngIf="selectedVoucher.voucherDiscountType === 'percentage'">
+            - {{selectedVoucher.voucherDiscountValue}}%
+          </ion-text>
+        </ion-col>
+      </ion-row>
+      <ion-row style="padding: 0px 16px;">
+        <ion-col>
+          <ion-text style="font-weight: bold;">Total</ion-text>
+        </ion-col>
+        <ion-col class="ion-text-end">
+          <ion-text>{{getTotalPrice() | currency:"PHP"}}</ion-text>
+        </ion-col>
+      </ion-row>
+    </ion-card>
+
+
+
+    <!-- Payment Section -->
+    <ion-card>
+      <ion-row class="ion-padding"><ion-label style="font-weight: bold; font-size: large;">Payment Method</ion-label></ion-row>
+      <ion-radio-group [value]="paymentMeth" (ionChange)="updatePaymentMethod($event)">
+        <ion-item lines="none">
+          <ion-icon name="cash-outline" slot="start" color="success"></ion-icon>
+          <ion-label>{{ deliveryMethod =='delivery' ?'Cash on Delivery':'Cash on Pickup'}}</ion-label>
+          <ion-radio mode="md" value="cash" ></ion-radio>
+        </ion-item>
+        <ion-item lines="none">
+          <ion-icon name="logo-paypal" slot="start" color="secondary"></ion-icon>
+          <ion-label>PayPal</ion-label>
+          <ion-radio mode="md" value="paypal"></ion-radio>
+        </ion-item>
+      </ion-radio-group>
+    </ion-card>
+    
+  </form>
+
+</ion-content>
+
+<ion-footer>
+    <!-- Proceed to Payment Button -->
+    <ion-button expand="full" color="primary" [disabled]="!orderForm.valid" (click)="proceedToPayment()">
+      Proceed to Payment
+    </ion-button>
+</ion-footer>

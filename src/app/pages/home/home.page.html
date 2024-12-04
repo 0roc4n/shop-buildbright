@@ -1,0 +1,87 @@
+<ion-header>
+  <ion-toolbar>
+     <ion-buttons slot="start">
+      <ion-menu-button menu="menu-content"></ion-menu-button>
+     </ion-buttons>
+    <ion-title>
+
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-icon name="cart-outline" size="large" (click)="goToCart()"></ion-icon>
+    </ion-buttons>
+
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-searchbar placeholder="Filter Pizza" inputmode="decimal" type="decimal" ></ion-searchbar> <!--(ionChange)="onSearchChange($event)" [debounce]="250"-->
+  </ion-toolbar>
+
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ng-container *ngIf="restaurants">
+    <div style="display: flex; justify-content: space-between;padding-bottom: 0; padding: 10px 10px 0 10px;">
+      <h6 style="margin: 0; font-weight: 600 !important">
+        Restaurants
+      </h6>
+      <div style="color: #f51042; font-weight: 600 !important; font-size: 12px;">
+        View All >>
+      </div>
+    </div>
+    <!-- <app-carousel  [onClickFunc]="goToRestaurant" [contentArray]="restaurants"  type="content">
+    </app-carousel> -->
+
+    <div style="border-top: 1px solid #edeff1 !important; border-bottom:1px solid #edeff1 !important; padding: 20px;">
+      <!-- <app-carousel type="ads">
+      </app-carousel> -->
+    </div>
+
+  </ng-container>
+
+  <ion-grid *ngIf="popular">
+    <div  style="display: flex; justify-content: space-between;padding: 10px 10px 0 10px;">
+      <h6 style="margin: 0; font-weight: 600 !important">
+        Most Popular
+      </h6>
+      <div style="color: #f51042; font-weight: 600 !important; font-size: 12px;">
+        {{popular.length}} places >>
+      </div>
+    </div>
+    <ion-row>
+      <ion-col size="6" *ngFor="let pop of popular">
+        <ion-card style="margin: 0; height: 250px;" (click)="goToRestaurant(pop)">
+          <img [src]="pop.image ?'data:image/png;base64,'+pop.image: 'assets/images/no_src.webp'" alt="">
+          <ion-card-content>
+            {{pop.bname}}
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <ion-card *ngIf="restaurants">
+    <img src="assets/images/banner.png" style="height: 100%;">
+  </ion-card>
+
+  <ion-grid *ngIf="mostSales">
+    <div  style="display: flex; justify-content: space-between;padding: 10px 10px 0 10px;">
+      <h6 style="margin: 0; font-weight: 600 !important">
+        Most Sales
+      </h6>
+      <div style="color: #f51042; font-weight: 600 !important; font-size: 12px;">
+        {{mostSales.length}} places >>
+      </div>
+    </div>
+    <ion-row *ngFor="let sales of mostSales">
+      <ion-card style=" display: flex; align-items: center; width: -webkit-fill-available; margin: 0;" (click)="goToRestaurant(sales)">
+        <div>
+          <img [src]="sales.image ?'data:image/png;base64,'+sales.image: 'assets/images/no_src.webp'" style="width: 150px !important;height:150px;">
+        </div>
+        <div>
+          {{sales.bname}}
+        </div>
+      </ion-card>
+    </ion-row>
+  </ion-grid>
+
+
+</ion-content>

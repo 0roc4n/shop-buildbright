@@ -1,0 +1,117 @@
+<ion-header>
+  <ion-toolbar color="primary">
+
+    <ion-buttons slot="start">
+      <ion-button (click)="dismiss()">
+        <ion-icon name="chevron-back-outline"></ion-icon>
+        Back
+      </ion-button>
+     </ion-buttons>
+     <!-- <ion-icon slot="start" src="assets/icon/hardware_hq.svg" size="large"></ion-icon> -->
+    <ion-title>
+      Search
+    </ion-title>
+
+    <ion-buttons slot="end">
+      <ion-button (click)="showFilters()">
+        <ion-icon name="flag-outline"></ion-icon>
+      </ion-button>
+     </ion-buttons>
+  </ion-toolbar>
+  <ion-toolbar color="primary">
+    <ion-searchbar placeholder="Search..."  style="padding: 0;" (ionChange)="onSearchChange($event)" [debounce]="250"></ion-searchbar>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <ion-card *ngIf="showingFilters" color="primary" style="padding:0;margin:0;border-radius: 0;">
+    <ion-item lines="none" color="primary">
+      <h1>Product Filter</h1>
+    </ion-item>
+    <ion-item lines="none" color="primary">
+      <h3>By Price: {{multiplier(this.range.lower)|currency:"PHP"}} ~ {{ (this.range.upper == 100)? "Unlimited": multiplier(this.range.upper)|currency:"PHP" }}</h3>
+    </ion-item>
+    <ion-item lines="none" color="primary">
+      <ion-range color="light" [dualKnobs]="true" (ionChange)="setRange($event)" [value]="range">
+      </ion-range>
+    </ion-item>
+    <ion-item color="primary">
+      <h3>By Category:</h3>
+    </ion-item>
+    <ng-container   *ngFor="let category of (categories$|async); let i = index">
+      <ion-item 
+      (click)="toggleSelect(category)"
+      [ngStyle]="{
+        'font-weight': selected(category.id)?'bold': 'normal'
+      }"
+       button color="primary">
+        <ion-col size="12"  >
+          <ion-icon *ngIf="selected(category.id)" name="checkbox-outline"></ion-icon>
+          <ion-icon *ngIf="!selected(category.id)" name="square-outline"></ion-icon>
+          {{category.name}} ({{countProductsByCategoryId(category.id, (allProducts$ | async))}})
+        </ion-col>
+  
+      </ion-item>
+      <ng-container *ngIf="selected(category.id)" >
+        <ion-item 
+        (click)="toggleSelectSub(subcat.id)"
+        [ngStyle]="{
+          'font-weight': subSelected(subcat.id)?'bold': 'normal'
+        }"
+
+         button color="primary" *ngFor="let subcat of category.subcategories">
+          <ion-col size="12" style="margin-left: 5px;">
+            <ion-icon *ngIf="subSelected(subcat.id)" name="checkbox-outline"></ion-icon>
+            <ion-icon *ngIf="!subSelected(subcat.id)" name="square-outline"></ion-icon>
+            {{subcat.name}} ({{countProductsBySubCategoryId(category.id,subcat.id,  (allProducts$ | async))}})
+          </ion-col>
+    
+        </ion-item>
+      </ng-container>
+    </ng-container>
+   
+    <ion-row style="display: flex; justify-content: center; padding-top: 5px; padding-bottom: 5px;" >
+      <ion-button color="light" (click)="applyFilters()" style="display: flex; justify-content: center;">
+        Apply Filters
+      </ion-button>
+   </ion-row>
+  </ion-card>
+  <ng-container *ngIf="!showingFilters">
+    <ion-grid  *ngIf="(filteredItems$ | async)  as filteredItems" >
+      <ion-row>
+        <!-- <ng-container > -->
+          <ion-col size="6" *ngFor="let prod of (filteredItems|slice:0:limit)">
+            <ion-card style="margin: 0;" (click)="goToProductDetails(prod)" class="ion-activatable ripple-parent rectangle" color="secondary">
+              <ion-ripple-effect></ion-ripple-effect>
+              <ion-img [src]="getFirstImageRef(prod)" style="height: 180px;padding: 10px;"></ion-img>
+              <ion-card-header>
+                <div style="font-size: 15px; font-weight: 600;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;">
+                  {{prod.name}}
+                </div>
+                <div *ngIf="!addBulk">
+                  {{ getMinPrice(prod) | currency:"PHP"}}
+                </div>
+                <app-review-icons [rating]="getAverageRating(prod)" [outOf]="5">
+                </app-review-icons>
+                <!-- <ng-container *ngIf="prod.variants?.[0] as firstVariant; else noVariant">
+                 <app-review-icons [rating]="firstVariant.totalRating ?? 0" [outOf]="5">
+                 </app-review-icons>
+               </ng-container> 
+               <ng-template #noVariant>
+                 <app-review-icons [rating]="prod.totalRating ?? 0" [outOf]="5">
+                 </app-review-icons>
+               </ng-template> -->
+             </ion-card-header>
+            </ion-card>
+          </ion-col>
+        <!-- </ng-container> -->
+      
+     </ion-row>
+     <ion-row *ngIf="hasMore(filteredItems)" style="display: flex; justify-content: center;" >
+        <ion-button (click)="viewMore()" style="display: flex; justify-content: center;">
+          View More
+        </ion-button>
+     </ion-row>
+   </ion-grid>
+  </ng-container>
+ 
+</ion-content>

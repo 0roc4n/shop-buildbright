@@ -1,0 +1,58 @@
+// .page-swiper{
+//   width        : 100%;
+//   height       : 100%;
+//   margin-left  : auto;
+//   margin-right : auto;
+// }
+
+// ion-segment{
+//   --background : #5d7fb6;
+//   color:#e21818 ;
+//   border-radius: 0;
+//   ion-segment-button{
+//     ::part(indicator-background) {
+//       background-color: #e21818
+
+//     }
+//   }
+
+// }
+// ion-segment{
+//   background: white;
+//   border-radius: 0;
+// }
+
+// ion-segment-button::part(indicator-background) {
+//   background:var(--ion-color-tertiary);
+// }
+
+// ion-segment-button.ios::part(native) {
+//   color: gray;
+// }
+
+// .segment-button-checked.ios::part(native) {
+//   color: var(--ion-color-tertiary);
+//   font-weight: bolder;
+// }
+
+// ion-segment-button.ios::part(indicator-background) {
+//   background-color: var(--ion-color-tertiary);
+//   border-radius: 0;
+// }
+
+// ion-segment-button ion-icon.ios::part(indicator-background) {
+//   background-color: var(--ion-color-tertiary);
+// }
+
+// .segment{
+//   background-color: white;
+// }
+
+// .segment ion-icon, .segment ion-label{
+//   color: gray;
+// }
+
+// ion-segment-button.ion-activated ion-icon,
+// ion-segment-button.ion-activated ion-label {
+//   color: blue;
+// }

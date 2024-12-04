@@ -1,0 +1,83 @@
+<ion-content class="ion-text-center">
+  <ion-img src="assets/icon/Vector.svg" class="wave"></ion-img>
+
+  <div class="cont">
+  
+    <ion-img src="assets/icon/hardware_hq.svg" style="height: 250px;"></ion-img>
+    <!-- <ion-text class="hq">HARDWARE HEADQUARTERS</ion-text> -->
+    <ion-card style="background: transparent; width: 90%; align-items: center; justify-content: center;">
+      <ion-card-header mode="md">
+        <ion-card-title class="text" style="padding-bottom: 5px; font-weight: bolder; font-size: x-large;">Login</ion-card-title>
+        <ion-card-subtitle class="text">Please sign in to continue.</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content [formGroup]="loginForm" >
+        <ion-item mode="md" style="--background: transparent; display: flex; align-items: center;">
+          <ion-icon name="mail-outline" slot="start" style="color: white; margin-right: 10px;"></ion-icon>
+          <ion-label position="floating" style="color: white;">Email</ion-label>
+          <ion-input placeholder="Enter email" formControlName="email" type="email" style="color: white; flex: 1;"></ion-input>
+        </ion-item>
+
+        <ion-item mode="md" style="--background: transparent; display: flex; align-items: center;">
+          <ion-icon name="key-outline" slot="start" style="color: white; margin-right: 10px;"></ion-icon>
+          <ion-label position="floating" style="color: white;">Password</ion-label>
+          <ion-input placeholder="Enter Password" formControlName="password" [type]="passwordInput.type" style="color: white; flex: 1;"></ion-input>
+          <ion-icon style="color: white; right: 0;" slot="end" [name]="passwordInput.icon" (click)="clickPasswordType()"></ion-icon>
+        </ion-item>
+        
+        <ion-button expand="full" shape="round" color="gradient-button" [disabled]="!loginForm.valid" (click)="signIn()">
+          LOGIN
+        </ion-button>
+        <ion-text style="color: #e21818; margin-top: 5%;" (click)="resetPassword()">Forgot Password?</ion-text>
+
+      </ion-card-content>
+    </ion-card>
+
+    <ion-text style="color: white;">Don't have an account? <a (click)="signUp()" style="text-decoration: none; font-weight: bolder; color: #00235b;">Sign Up</a></ion-text>
+  <!-- <ion-card style="margin: 0; width: 90%;" color="primary">
+    <ion-card-header>
+      <ion-card-title>Sign In</ion-card-title>
+    </ion-card-header>
+    <ion-card-content [formGroup]="loginForm">
+      <ion-item fill="outline" mode="md" style="padding-bottom: 10px;">
+        <ion-label position="floating">Email</ion-label>
+        <ion-input formControlName="email" type="email"></ion-input>
+      </ion-item>
+
+      <ion-item fill="outline" mode="md">
+        <ion-label position="floating">Password</ion-label>
+        <ion-input formControlName="password" [type]="passwordInput.type"></ion-input>
+        <ion-icon slot="end" [name]="passwordInput.icon" (click)="clickPasswordType()"></ion-icon>
+      </ion-item>
+
+
+      <ion-row>
+        <ion-col size="6">
+          <ion-button (click)="signUp()" expand="block">
+           Sign Up
+          </ion-button>
+        </ion-col>
+        <ion-col size="6">
+          <ion-button [disabled]="!loginForm.valid" (click)="signIn()" expand="block">
+            Sign In
+          </ion-button>
+        </ion-col>
+      </ion-row>
+      <ion-row style="display: flex; justify-content: center; cursor: pointer;" (click)="resetPassword()">
+        <ion-col size="auto">
+          <ion-icon name="lock-open"></ion-icon>
+        </ion-col>
+        <ion-col size="auto">
+          <h6>
+            Forgot password?
+          </h6>
+        </ion-col>
+      </ion-row>
+
+    </ion-card-content>
+
+  </ion-card> -->
+  
+  
+  </div>
+  
+</ion-content>

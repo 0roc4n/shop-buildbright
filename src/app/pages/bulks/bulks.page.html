@@ -1,0 +1,219 @@
+<!-- customer-form.page.html -->
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button menu="menu-content"></ion-menu-button>
+     </ion-buttons>
+    <ion-title>
+      Bulk Order
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <form [formGroup]="bulkOrder">
+    <ion-list>
+      <ng-container *ngIf="!currentBulk" >
+        <ion-item *ngIf="!items.length">
+          <div style="width: 100%;text-align: center; padding:10px;">
+            Currently, your bulk list is empty, click 'Add Item' to add new items.
+          </div>
+        </ion-item>
+        <ion-item *ngIf="items.length">
+          <div style="width: 100%;text-align: center;padding:10px;">
+            Complete your form and ask a price.
+          </div>
+        </ion-item>
+      </ng-container>
+      <ng-container *ngIf="currentBulk" >
+        <ion-item *ngIf="!checkResponded()">
+          <div style="width: 100%;text-align: center; padding:10px;">
+            Currently waiting an offer from the store... 
+          </div>
+        </ion-item>
+        <ion-item *ngIf="checkResponded()">
+          <div style="width: 100%;text-align: center;padding:10px;">
+            Seller have offered a price, review your items and proceed to checkout.
+          </div>
+        </ion-item>
+      </ng-container>
+      <!-- <ion-item>
+        <ion-label position="floating">Customer Name</ion-label>
+        <ion-input formControlName="customerName" type="string" required></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="floating">Customer Email Address</ion-label>
+        <ion-input formControlName="customerEmail" type="email" required></ion-input>
+      </ion-item> -->
+
+    </ion-list>
+  </form>
+  <!-- <ion-list> -->
+    <ion-card *ngFor="let product of items; let i = index" style="margin-top: 10px; padding-bottom: 15px;">
+      <ion-item>
+        <ion-thumbnail slot="start">
+          <img [src]="product.images ?? product.image">
+        </ion-thumbnail>
+        <ion-col>
+          <ion-row >{{product.name}}</ion-row>
+          <ion-row  *ngIf="product.variants">
+            <div *ngFor="let name of product.variants" style="border: 2px solid rgba(0, 0, 0, 0.3); border-radius: 5px;padding: 1px 3px;margin-right: 5px;">
+              <ion-text style="font-size: small;">{{name.variant}}</ion-text>
+            </div>
+          </ion-row>
+           <ion-row >Retail Price: {{ product.price * product.quantity | currency:"PHP"}}
+            <span *ngIf="product.discount > 0" style="margin-left:2px; color: red !important; opacity: 70; font-size: small; background-color: rgb(255, 239, 239); font-weight: 200 ;border-radius: 10px ; padding :2px 6px">{{product.discount}}%</span>
+           </ion-row>
+           <ion-row >Stocks Available: {{ product.stocks}}</ion-row>
+        </ion-col>
+      </ion-item>
+      <!-- <ion-item> -->
+          <!-- <ion-label position="floating">Item/Product {{ i + 1 }}</ion-label>
+          <ion-input [(ngModel)]="items[i].name" name="itemName" required (ionChange)="logChange(items[i].name, i)"></ion-input>
+           -->
+          <!-- Dispfirebaselay the suggested names based on the search filter -->
+          <!-- <ion-list *ngIf="suggestedNames[i]?.length">
+              <ion-item *ngFor="let suggestion of suggestedNames[i]">
+                  {{ suggestion }}
+              </ion-item>
+          </ion-list> -->
+  
+          <!-- <ion-label position="floating">Quantity</ion-label>
+          <ion-input [(ngModel)]="items[i].quantity" name="itemQuantity" type="number" required (ionChange)="logChange('itemQuantity', items[i].quantity)"></ion-input>
+          -->
+
+          <!-- <ion-item-sliding *ngFor="let product of products"> -->
+            <!-- <ion-item> -->
+    
+              <!-- <ion-label> -->
+                <!-- <ion-col size="12"> -->
+                 
+                  <!-- <ion-item>Original: {{ product.price | currency:"PHP"}} Per Piece</ion-item> -->
+                  <!-- <ion-row style="display: flex; flex-wrap: none; align-items: center; margin-bottom: 5px;">
+                    Quantity:
+                    <div class="quant">
+                      <ion-col size="4"><ion-button class="minus" fill="none" (click)="decreaseQuantity(product)">-</ion-button></ion-col>
+                      <ion-col size="4"><ion-label class="num" >{{ product.quantity }}</ion-label></ion-col>
+                      <ion-col size="4"><ion-button class="plus" fill="none" (click)="increaseQuantity(product)">+</ion-button></ion-col>
+                    </div>
+                  </ion-row> -->
+
+                 <!-- <ng-container  > -->
+                   <ion-row style="align-items: end;" >
+                    <ion-col size="{{currentBulk? '12': '9'}}">
+                      <ion-item [ngClass]="{
+                          'invalid-input': quantityInvalid(i)
+                        }" >
+                        <ion-label position="floating">Quantity <span>{{notEnoughStocks(product)?'(Not Enough Stocks)':''}}</span></ion-label>
+                        <ion-input *ngIf="!currentBulk"
+                        [formControl]="getForm(i)" (ionInput)="updateQuantity($event,product)" type="number"></ion-input>
+                        <ion-input *ngIf="currentBulk"
+                        [readonly]="true"
+                        [value]="product.quantity" type="number"></ion-input>
+            
+                      </ion-item>
+                    </ion-col>
+                    <ion-col *ngIf="!currentBulk" size="3" style="margin-top: 20px; ">
+                      <ion-button (click)="deleteItem(product)" expand="full" style="border-radius: 5px!important; overflow: hidden;" >
+                        Remove
+                      </ion-button>
+                    </ion-col>
+                   </ion-row>
+                   <ion-row *ngIf="currentBulk" style="align-items: end;" >
+                    <ion-col size="9">
+                      <ion-item  *ngIf="product.bulk_price" >
+                        <ion-label position="floating">Offered Price</ion-label>
+                        <ion-input class="offered"
+                        [readonly]="true"
+                        value="{{product.bulk_price | currency:'PHP'}}"  type="string"></ion-input>
+                      </ion-item>
+                      <ion-item *ngIf="!product.bulk_price">
+                        <ion-text><span style="font-weight: bold; opacity: 70%;">Offered Price</span> : Pending</ion-text>
+                      </ion-item>
+                    </ion-col>
+                    <ion-col *ngIf="!currentBulk" size="3" style="margin-top: 20px; ">
+                      <ion-button (click)="deleteItem(product)" expand="full" style="border-radius: 5px!important; overflow: hidden;" >
+                        Remove
+                      </ion-button>
+                    </ion-col>
+                   </ion-row>
+                 <!-- </ng-container> -->
+            
+                <!-- </ion-col> -->
+              <!-- </ion-label> -->
+            <!-- </ion-item> -->
+            <!-- <ion-item-options side="end">
+              <ion-item-option color="danger" (click)="removeItem(i)">Remove</ion-item-option>
+            </ion-item-options> -->
+          <!-- </ion-item-sliding> -->
+          <!-- <ion-button (click)="removeItem(i)" color="danger" shape="round" size="small">
+              Remove
+          </ion-button> -->
+      <!-- </ion-item> -->
+  </ion-card>
+  <!-- </ion-list> -->
+
+  <ion-card *ngIf="currentBulk" style="margin-top: 0px; padding-bottom: 15px;">
+    <ion-item><div style="padding-bottom: 5px;font-weight: bold; font-size: large; color: black">Total Summary</div></ion-item>
+    <ion-row style="margin-top:10px;padding: 0px 16px;">
+      <ion-col>
+        <ion-text style="font-weight: bold;">Retail total</ion-text>
+      </ion-col>
+      <ion-col class="ion-text-end">
+        <ion-text>{{getRetailTotal() | currency:"PHP"}} </ion-text>
+      </ion-col>
+    </ion-row>
+    <ion-row style="padding: 0px 16px;">
+      <ion-col>
+        <ion-text class="offertotal"  style="font-weight: bold;">Offer total</ion-text>
+      </ion-col>
+      <ion-col class="ion-text-end">
+        <ion-text class="offertotal" style="font-size: medium; font-weight: bold;" *ngIf="checkResponded()">{{getOfferTotal() | currency:"PHP"}} <span style="font-size: small;">({{getOfferDeduction()}})</span></ion-text>
+        <ion-text *ngIf="!checkResponded()">Pending</ion-text>
+      </ion-col>
+    </ion-row>
+  </ion-card>
+  
+  <ion-card style="margin-top: 5px;" *ngIf="currentBulk">
+    <div class="ion-padding" >
+      <ion-item>
+        <h2 style="margin: 0;margin-bottom: 10px; text-align: center;">
+          Negotiate with Seller
+        </h2>
+      </ion-item>
+      <div id="chatScroll" style="margin-top: 5px;max-height: 500px;overflow-y: scroll;">
+        <ng-container *ngIf="currentBulk.quotation?.messages?.length;else nomessages" >
+          <div *ngFor="let message of currentBulk.quotation?.messages">
+            <div [ngClass]="{'client-message': message.from === 'client' ,'store-message': message.from === 'store' }">
+              {{message.message}}
+              <p>
+                {{message.timestamp | date : "MMM d, y, h:mm a"}}
+              </p>
+            </div>
+          </div>
+        </ng-container>
+        <ng-template #nomessages>
+          <p style="text-align: center;">
+            Start a conversation with the store.
+          </p>
+        </ng-template>
+      </div>
+  
+      <ion-item mode="md" fill="outline" style="padding-top: 20px;" >
+        <ion-label position="floating">Send Message</ion-label>
+        <ion-input [formControl]="chatInput" (keyup.enter)="chatBOP(currentBulk)"></ion-input>
+        <ion-icon name="send-outline" slot="end" style="cursor: pointer;" (click)="chatBOP(currentBulk)"></ion-icon>
+      </ion-item>
+    </div>
+  </ion-card>
+  
+  <ng-container *ngIf="!currentBulk;else pendingBulk" >
+    <ion-button expand="full" (click)="addItem()">Add Item</ion-button>
+    <ion-button [disabled]="!checkFormIsValid()" *ngIf="items.length" expand="full" (click)="submitForm()">Ask a Price</ion-button>
+  </ng-container>
+  <ng-template #pendingBulk>
+   <ion-button color="secondary"  [disabled]="!checkResponded()" expand="full" (click)="checkout()">Approve Offer</ion-button>
+   <ion-button  color="secondary" [disabled]="!checkResponded()" expand="full" (click)="showDeclineAlert()">Decline Offer</ion-button>
+  </ng-template>
+</ion-content>

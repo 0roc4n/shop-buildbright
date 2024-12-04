@@ -1,0 +1,538 @@
+
+      <!-- <div class="ion-padding" style="padding-bottom: 0;">
+        <app-review-icons  [rating]="productDetails.variants?.[variantIndex].totalRating ?? 0" [outOf]="5"></app-review-icons>
+      </div> -->
+
+    <!-- <h5 class="ion-padding" style="padding-top: 0; padding-bottom: 0;">
+      Reviews
+    </h5>
+    <ion-list *ngIf="ratings$ | async as ratings; else noReview ">
+      <ng-container *ngIf="ratings.length > 0; else noReview">
+        <ng-container *ngFor="let rating of ratings">
+          <ng-container *ngIf="productDetails.variants; else noVariant" >
+            <ion-item *ngIf="rating.variantIndex === (variantIndex$ | async)">
+              <ion-avatar slot="start">
+                <img [src]="rating.clientData.profilePic" />
+              </ion-avatar>
+              <ion-label>
+                <h1 style="white-space: normal;">
+                  {{rating.review}}
+
+                </h1>
+                <app-review-icons [rating]="rating.rating" [outOf]="5">
+                </app-review-icons>
+
+                <h3>
+                 From: {{rating.clientData.fullname.first}} {{rating.clientData.fullname.middleInitial}} {{rating.clientData.fullname.last}}
+                </h3>
+                <p>
+                  {{rating.timestamp | date}}
+                </p>
+              </ion-label>
+            </ion-item>
+          </ng-container>
+          <ng-template #noVariant>
+            <ion-item>
+              <ion-avatar slot="start">
+                <img [src]="rating.clientData.profilePic"/>
+              </ion-avatar>
+              <ion-label>
+                <h1 style="white-space: normal;">
+                  {{rating.review}}
+                </h1>
+                <app-review-icons [rating]="rating.rating" [outOf]="5">
+                </app-review-icons>
+                <h3>
+                 From: {{rating.clientData.fullname.first}} {{rating.clientData.fullname.middleInitial}} {{rating.clientData.fullname.last}}
+                </h3>
+                <p>
+                  {{rating.timestamp | date}}
+                </p>
+              </ion-label>
+            </ion-item>
+          </ng-template>
+        </ng-container>
+      </ng-container>
+      <ng-template #noReview>
+        <h6 class="ion-padding" style="padding-top: 0; padding-bottom: 0; margin-top: 0; ">
+          No Reviews
+        </h6>
+      </ng-template>
+    </ion-list>
+    <ng-template #noReview>
+      <h6 class="ion-padding" style="padding-top: 0; padding-bottom: 0; margin-top: 0; ">
+        No Reviews
+      </h6>
+    </ng-template> -->
+
+    <!-- <h5 class="ion-padding" style="padding-top: 0; padding-bottom: 0; font-weight: bold;">
+      Suggested Products
+    </h5>
+    <swiper-container [slidesPerView]="2.5" [renderExternalUpdate]="true" #suggestionSwiper>
+      <swiper-slide *ngFor="let product of (suggestions$ | async) ; let i = index" role="group">
+        <ion-card style='margin: 10px;max-width: 155px;' color="secondary">
+          <ion-img [src]="getFirstImageRef(product)" style="height: 100px;padding: 10px;"></ion-img>
+          <div style="padding: 10px;">
+            <div style="display: -webkit-box;-webkit-line-clamp: 2;-webkit-box-orient: vertical; min-height: 32px;overflow: hidden;">
+              {{product.name}}
+            </div>
+          </div>
+        </ion-card>
+      </swiper-slide>
+    </swiper-container>
+
+  </ng-container>
+</ion-content> -->
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/"></ion-back-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button (click)="goToCart()">
+        <ion-icon name="cart-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content> 
+  <ng-container *ngIf="(productDetails$ | async) as productDetails">
+
+    <!-- ============================W/ VARIANTS======================================= -->
+    <div *ngIf="productDetails.variants">
+      <!-- <div style="display: flex; flex-direction: row;"> -->
+        <!-- -------------------images---------------------------- -->
+        <ion-slides #pageswiper class="page-swiper" slides-per-view="1" [options]="options"  pager>
+            <ng-container *ngFor="let v of sampleQuery(productDetails); let i=index">
+            <ion-slide *ngFor="let img of v.image, let i = index">
+              <ion-img [src]="img.imageRef" style="height: 200px;margin-top: 0%; padding-top: 0%;"></ion-img>
+            </ion-slide>
+          </ng-container>
+
+        </ion-slides>
+        <!-- -----------name--------------- -->
+        <ion-item lines="none" style="padding: 0px;">
+          <ion-text color="primary" style="padding:0px;">
+              <h3  style="font-weight: bold;">
+                {{productDetails.name}}
+              </h3>
+          </ion-text>
+          <ion-icon slot="end" [name]="checkIfFavorite(productDetails.id)?'heart':'heart-outline'" (click)="sendToFavorites(productDetails)" color="danger"></ion-icon>
+        </ion-item>
+        <!-- -----------price--------------- -->
+        <ion-text *ngIf="productDetails.discount <= 0" class="ion-padding" style="font-size: larger; font-weight: bold;padding-bottom: 0;">{{getMinMaxPrice(productDetails)}}</ion-text>
+        <ion-text *ngIf="productDetails.discount > 0" class="ion-padding" style="font-size: larger; font-weight: bold;padding-bottom: 0; display: flex; align-items: center;">{{getMinMaxPrice(productDetails, true)}}
+          <span style="margin-left: 5px ;color: gray; opacity: 0.7; text-decoration-line: line-through; font-size: medium;">{{getMinMaxPrice(productDetails)}}</span>
+          <span style="margin-left:5px; color: red !important; opacity: 70; font-size: small; background-color: rgb(255, 239, 239); font-weight: 200 ;border-radius: 10px ; padding :2px 6px">{{productDetails.discount}}%</span></ion-text>
+        <!-- -----------ratings--------------- -->
+        <div style="padding: 0px 16px 5px;">
+          <!-- <ng-container *ngIf=" productDetails.variants?.colors?.[0].types[0] ?? productDetails.variants?.color?.[0]  ?? productDetails.variants?.size?.[0] ?? productDetails.variants?.[0]  as  firstvariant; else novariant" >
+            <app-review-icons  [rating]="firstvariant.totalRating?? 0" [outOf]="5"></app-review-icons>
+          </ng-container>
+          <ng-template #novariant>
+            <app-review-icons  [rating]="productDetails.totalRating ?? 0" [outOf]="5"></app-review-icons>
+          </ng-template> -->
+          <app-review-icons  [rating]="getAverageRating(productDetails)" [outOf]="5"></app-review-icons>
+        </div>
+        <!-- -----------availability--------------- -->
+        <h6 *ngIf="selectedVariants.length >= 1 && getStocks() != null && getStocks() != 0" class="ion-padding" style="padding-top: 0; padding-bottom: 0; margin-top: 0; display: flex; font-weight: bold;">
+          Availability: In stock ( {{ getStocks() }} )
+        </h6>
+        <h6 class="ion-padding" style="color:red ;padding-top: 0; padding-bottom: 0; margin-top: 0; display: flex;" *ngIf="getStocks() == 0">
+          Out of Stock
+        </h6>
+        <!-- -----------variants--------------- -->
+        <div *ngIf="productDetails.variants">
+          <h5 style="padding: 0px 16px; font-weight: bold;">
+            Select Variations:
+          </h5>
+          <ng-container *ngFor="let variant of (productDetails.variants) | keyvalue; let i=index;">
+            <ion-text *ngIf="isArray(variant.value)" class="ion-padding" style="padding-bottom: 0; margin-bottom: 0; margin-top: 0; font-size: medium; font-weight: bold;">
+              {{capitalize(productDetails.variant_type ?variant.key == 'colors' || variant.key == 'size'  ? removeBaseName(productDetails.variant_type,productDetails.name) : removeBaseName(productDetails.subvariant_type,productDetails.name): variant.key)}}
+            </ion-text>
+            <!-- single variation -->
+            <div *ngIf="variant.key === 'color' || variant.key === 'size'">
+              <ion-row style="display: flex;">
+                <ion-col *ngFor="let val of convertToArray(variant.value); let j = index" size="3" style="display: flex; align-items: center;">
+                  <ion-card class="ion-padding" [style.border]="isItemSelected(val) ? '2px solid red' : 'none'" (click)="selectedVariant(variant.key, val, j); pageswiper.slideTo(j)" style="margin: 2px; padding-top: 5px; padding-bottom: 5px; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center;">
+                    <ion-img [src]=""></ion-img>
+                    <ion-label style="font-size: small; width: 100%; height: 100%; text-align: center; align-items: center;" color="black">
+                      {{ capitalize(removeBaseName(val.variant_name,productDetails.name)) }}
+                    </ion-label>
+                  </ion-card>
+                </ion-col>
+              </ion-row>              
+            </div>
+            <!-- colors -->
+            <div *ngIf="variant.key === 'colors'">
+              <ion-row style="display: flex;">
+                <ion-col *ngFor="let val of convertToArray(variant.value); let j = index" size="3" style="display: flex; align-items: center;">
+                  <ion-card class="ion-padding" [style.border]="isItemSelected(val) ? '2px solid red' : 'none'" (click)="selectedVariant(variant.key, val, j);pageswiper.slideTo(j)" style="margin: 2px; padding-top: 5px; padding-bottom: 5px; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center;">
+                    <ion-label style="font-size: small; width: 100%; height: 100%; text-align: center; align-items: center;" color="black">
+                      {{ capitalize(removeBaseName(val.variant_name,productDetails.name)) }}
+                    </ion-label>
+                  </ion-card>
+                </ion-col>
+              </ion-row>
+            </div>
+            <!-- type -->
+            <div *ngIf="variant.key === 'type'">
+              <ion-row style="display: flex;">
+                <ion-col *ngFor="let val of convertToArray(variant.value); let j = index" size="3" style="display: flex; align-items: center;">
+                  <ion-card class="ion-padding" [disable]="getStocks() === 0" [style.border]="isItemSelected(val) ? '2px solid red' : 'none'" (click)="selectedVariant(variant.key, val, j)" style="margin: 2px; padding-top: 5px; padding-bottom: 5px; width: 100%; height: 100%; display: flex; align-items: center;">
+                    <ion-label style="font-size: small; width: 100%; height: 100%; text-align: center; align-items: center;" color="black">
+                      {{ capitalize(removeBaseName(val.name,productDetails.name)) }}
+                    </ion-label>
+                  </ion-card>
+                </ion-col>
+              </ion-row>              
+            </div>
+          </ng-container>
+        </div>
+        <!-- -----------quantity--------------- -->
+        <ion-row style="display: flex; padding: 0px 16px; align-items: center;">
+          <ion-col size="4" style="padding: 0%;">
+            <h5 style="padding-top: 0; padding-bottom: 0; font-weight: bold;">
+              Quantity
+            </h5>
+          </ion-col>
+          <ion-col size="4" style="display: flex; justify-content: end;">
+            <h6 style="padding-top: 0; padding-bottom: 0; font-weight: bold;">
+              {{selectedVariants.length >= 1? (getDiscountedPrice(getPrice(), productDetails.discount) | currency: "PHP") : '₱0'}}
+            </h6>
+          </ion-col>
+          <ion-col size="4">
+            <div class="quant">
+              <span class="minus" (click)="decrementQuantity()">-</span>
+              <span class="num">{{ quantity }}</span>
+              <span class="plus" (click)="incrementQuantity(getStocks())" >+</span>
+            </div>
+          </ion-col>
+        </ion-row>
+        <!-- -----------cart/buy now--------------- -->
+        <ion-row *ngIf="!addBulk" style="margin-top: 5px;">
+          <ion-col size="6">
+            <ion-button fill="outline" expand="block" (click)="sendToCart()" [disabled]="!checkVariants(productDetails)"> Add to Cart</ion-button>
+          </ion-col>
+          <ion-col size="6">
+            <ion-button fill="solid" expand="block" (click)="buyNow()" [disabled]="!checkVariants(productDetails)">Buy Now</ion-button>
+          </ion-col>
+        </ion-row>
+        <ion-row *ngIf="addBulk" style="margin-top: 5px;">
+          <ion-col size="12">
+            <ion-button  fill="outline" expand="block" (click)="addToBulk()" [disabled]="!checkVariants(productDetails)"> Add to Bulk</ion-button>
+          </ion-col>
+        </ion-row>
+        <!-- -----------description--------------- -->
+        <h5 class="ion-padding" style="padding-top: 0; padding-bottom: 0; font-weight: bold;">
+          Description
+        </h5>
+        <div class="ion-padding" style="padding-top: 0; padding-bottom: 0;"><ion-text>{{productDetails.description}}</ion-text></div>
+        <!-- -----------reviews--------------- -->
+        <!-- <h5 class="ion-padding" style="padding-top: 0; padding-bottom: 0; font-weight: bold;">
+          Reviews ({{reviews}})
+        </h5> -->
+        <ng-container *ngIf="ratings$ | async as ratings; else noReview " >
+          <h5 class="ion-padding" style="padding-top: 0; padding-bottom: 0;">
+            Reviews ({{ratings.length}})
+          </h5>
+          <ion-list >
+            <ng-container *ngIf="ratings.length > 0; else noReview">
+              <ng-container *ngFor="let rating of ratings">
+                <ng-container *ngIf="productDetails.variants; else noVariant" >
+                  <ion-item >
+                    <ion-avatar slot="start">
+                      <img [src]="rating.clientData.profilePic" />
+                    </ion-avatar>
+                    <ion-label>
+                      <h1 style="white-space: normal;">
+                        {{rating.review}}
+  
+                      </h1>
+                      <app-review-icons [rating]="rating.rating" [outOf]="5">
+                      </app-review-icons>
+  
+                      <h3>
+                      From: {{rating.clientData.fullname.first}} {{rating.clientData.fullname.middleInitial}} {{rating.clientData.fullname.last}}
+                      </h3>
+                      <p *ngIf="rating.variantIndex != null && rating.type !=null">
+                       Variant: {{productDetails.variants.colors[rating.variantIndex].variant_name}} {{productDetails.variants.colors[rating.variantIndex].types[rating.type].name}}
+                      </p>
+                      <p *ngIf="rating.variantIndex != null && rating.type ==null">
+                       Variant: {{productDetails.variants.size[rating.variantIndex].variant_name}}
+                      </p>
+                      <p>
+                        {{rating.timestamp | date}}
+                      </p>
+                    </ion-label>
+                  </ion-item>
+                </ng-container>
+                <ng-template #noVariant>
+                  <ion-item>
+                    <ion-avatar slot="start">
+                      <img [src]="rating.clientData.profilePic"/>
+                    </ion-avatar>
+                    <ion-label>
+                      <h1 style="white-space: normal;">
+                        {{rating.review}}
+                      </h1>
+                      <app-review-icons [rating]="rating.rating" [outOf]="5">
+                      </app-review-icons>
+                      <h3>
+                      From: {{rating.clientData.fullname.first}} {{rating.clientData.fullname.middleInitial}} {{rating.clientData.fullname.last}}
+                      </h3>
+                      <p *ngIf="rating.variantIndex != null && rating.type !=null">
+                        Variant: {{productDetails.variants.colors[rating.variantIndex].variant_name}} {{productDetails.variants.colors[rating.variantIndex].types[rating.type].name}}
+                       </p>
+                       <p *ngIf="rating.variantIndex != null && rating.type ==null">
+                        Variant: {{productDetails.variants.size[rating.variantIndex].variant_name}}
+                       </p>
+                      <p>
+                        {{rating.timestamp | date}}
+                      </p>
+                    </ion-label>
+                  </ion-item>
+                </ng-template>
+              </ng-container>
+            </ng-container>
+            <ng-template #noReview>
+              <h6 class="ion-padding" style="padding-top: 0; padding-bottom: 0; margin-top: 0; ">
+                No Reviews
+              </h6>
+            </ng-template>
+          </ion-list>
+        </ng-container>
+     
+        <ng-template #noReview>
+          <h6 class="ion-padding" style="padding-top: 0; padding-bottom: 0; margin-top: 0; ">
+            No Reviews
+          </h6>
+        </ng-template>
+
+        <!-- -----------suggestions--------------- -->
+        <ng-container>
+          <h5 class="ion-padding" style="padding-top: 0; padding-bottom: 0; font-weight: bold;">
+            You might also like
+          </h5>
+          <ion-row>
+            <ng-container *ngFor="let suggest of getByCat(productDetails.category)">
+              <ion-col size="6">
+                <ion-card class="ion-activatable ripple-parent rectangle" style="margin: 3px;" color="light" (click)="goToProd(suggest)">
+                  <ion-ripple-effect></ion-ripple-effect>
+                  <ion-img [src]="getFirstImageRef(suggest)" style="height: 180px;"></ion-img>
+                  <ion-card-header>
+                    <div class="prodDetails">
+                      {{suggest.name}}
+                    </div>
+                    <div>
+                      <ion-text style="font-size: medium; text-align: left;">{{getMinMaxPrice(suggest, true)}}</ion-text>
+                    </div>
+                    <!-- <ng-container *ngIf="prod.variants?.[0] as firstVariant; else noVariant">
+                      <app-review-icons [rating]="firstVariant.totalRating ?? 0" [outOf]="5">
+                      </app-review-icons>
+                    </ng-container> -->
+                    <!-- <ng-template #noVariant>
+                      <app-review-icons [rating]="prod.totalRating ?? 0" [outOf]="5">
+                      </app-review-icons>
+                    </ng-template> -->
+                  </ion-card-header>
+                </ion-card>
+              </ion-col>
+            </ng-container>
+          </ion-row>
+        </ng-container>
+      <!-- </div> -->
+    </div>
+
+
+
+
+
+
+
+ <!-- ============================NO VARIANTS======================================= -->
+    <div *ngIf="productDetails.images" style="padding: 10px;">
+      <!-- -----------images--------------- -->
+      <ion-slides #pageswiper class="page-swiper" slides-per-view="1" [options]="options"  pager>
+        <ng-container >
+        <ion-slide *ngFor="let img of productDetails.images, let i = index">
+          <ion-img [src]="img.imageRef" style="height: 200px;margin-top: 0%; padding-top: 0%;"></ion-img>
+        </ion-slide>
+      </ng-container>
+
+    </ion-slides>
+      <!-- -----------name--------------- -->
+      <ion-item lines="none" style="padding: 0px;">
+        <ion-text color="primary" style="padding:0px;">
+            <h3 style="font-weight: bold;">
+              {{productDetails.name}}
+            </h3>
+        </ion-text>
+        <ion-icon slot="end" [name]="checkIfFavorite(productDetails.id)?'heart':'heart-outline'" (click)="sendToFavorites(productDetails)" color="danger"></ion-icon>
+      </ion-item>
+      <!-- -----------price--------------- -->
+      <ion-text *ngIf="productDetails.discount <= 0" class="ion-padding" style="font-size: larger; font-weight: bold;padding-bottom: 0;">{{productDetails.price | currency: "PHP"}}</ion-text>
+      <ion-text *ngIf="productDetails.discount > 0" class="ion-padding" style="font-size: larger; font-weight: bold;padding-bottom: 0; display: flex; align-items: center;">{{getMinMaxPrice(productDetails, true)}}
+        <span style="margin-left: 5px ;color: gray; opacity: 0.7; text-decoration-line: line-through; font-size: medium;">{{getMinMaxPrice(productDetails)}}</span>
+        <span style="margin-left:5px; color: red !important; opacity: 70; font-size: small; background-color: rgb(255, 239, 239); font-weight: 200 ;border-radius: 10px ; padding :2px 6px">{{productDetails.discount}}%</span></ion-text>
+      <!-- -----------ratings--------------- -->
+      <div style="padding: 0px 16px 5px;">
+      <ng-container *ngIf="productDetails.variants?.colors?.[0].types[0] ?? productDetails.variants?.color?.[0]  ?? productDetails.variants?.size?.[0] ?? productDetails.variants?.[0]  as  firstvariant; else novariant" >
+        <app-review-icons  [rating]="firstvariant.totalRating" [outOf]="5"></app-review-icons>
+      </ng-container>
+      <ng-template #novariant>
+        <app-review-icons  [rating]="productDetails.totalRating ?? 0" [outOf]="5"></app-review-icons>
+      </ng-template>
+      </div>
+      <!-- -----------availability--------------- -->
+      <h6 class="ion-padding" style="padding-top: 0; padding-bottom: 0; margin-top: 0; display: flex;" *ngIf="productDetails.in_stock > 0">
+        Availability: In stock ( {{productDetails.in_stock}} )
+      </h6>
+      <h6 class="ion-padding" style="color:red; padding-top: 0; padding-bottom: 0; margin-top: 0; display: flex;" *ngIf="productDetails.in_stock <= 0">
+        Out of Stock
+      </h6>
+      <!-- -----------quantity--------------- -->
+      <ion-row style="display: flex; padding: 0px 16px; align-items: center;">
+        <ion-col size="6" style="padding: 0%;">
+          <h5 style="padding-top: 0; padding-bottom: 0; font-weight: bold;">
+            Quantity
+          </h5>
+        </ion-col>
+        <ion-col size="6">
+          <div class="quant">
+            <span class="minus" (click)="decrementQuantity()">-</span>
+            <span class="num">{{ quantity }}</span>
+            <span class="plus" (click)="incrementQuantity(productDetails.in_stock)">+</span>
+          </div>
+        </ion-col>
+      </ion-row>
+      <!-- -----------cart/buy now--------------- -->
+      <ion-row *ngIf="!addBulk" style="margin-top: 5px;">
+        <ion-col size="6">
+          <ion-button [disabled]="productDetails.in_stock <= 0" fill="outline" expand="block" (click)="sendToCart()"> Add to Cart</ion-button>
+        </ion-col>
+        <ion-col size="6">
+          <ion-button [disabled]="productDetails.in_stock <= 0" fill="solid" expand="block" (click)="buyNow()">Buy Now</ion-button>
+        </ion-col>
+      </ion-row>
+      <ion-row *ngIf="addBulk" style="margin-top: 5px;">
+        <ion-col size="12">
+          <ion-button [disabled]="productDetails.in_stock <= 0" fill="outline" expand="block" (click)="addToBulk()"> Add to Bulk</ion-button>
+        </ion-col>
+      </ion-row>
+      <!-- -----------description--------------- -->
+      <h5 class="ion-padding" style="padding-top: 0; padding-bottom: 0; font-weight: bold;">
+        Description
+      </h5>
+      <div class="ion-padding" style="padding-top: 0; padding-bottom: 0;"><ion-text>{{productDetails.description}}</ion-text></div>
+      <!-- -----------reviews--------------- -->
+      <!-- <h5 class="ion-padding" style="padding-top: 0; padding-bottom: 0; font-weight: bold;">
+        Reviews ({{reviews}})
+      </h5> -->
+      <ng-container *ngIf="ratings$ | async as ratings; else noReview " >
+        <h5 class="ion-padding" style="padding-top: 0; padding-bottom: 0;">
+          Reviews ({{ratings.length}})
+        </h5>
+        <ion-list >
+          <ng-container *ngIf="ratings.length > 0; else noReview">
+            <ng-container *ngFor="let rating of ratings">
+              <ng-container *ngIf="productDetails.variants; else noVariant" >
+                <ion-item >
+                  <ion-avatar slot="start">
+                    <img [src]="rating.clientData.profilePic" />
+                  </ion-avatar>
+                  <ion-label>
+                    <h1 style="white-space: normal;">
+                      {{rating.review}}
+                    </h1>
+                    <app-review-icons [rating]="rating.rating" [outOf]="5">
+                    </app-review-icons>
+
+                    <h3>
+                    From: {{rating.clientData.fullname.first}} {{rating.clientData.fullname.middleInitial}} {{rating.clientData.fullname.last}}
+                    </h3>
+                    <p *ngIf="rating.variantIndex != null && rating.type !=null">
+                      Variant: {{productDetails.variants.colors[rating.variantIndex].variant_name}} {{productDetails.variants.colors[rating.variantIndex].types[rating.type].name}}
+                     </p>
+                     <p *ngIf="rating.variantIndex != null && rating.type ==null">
+                      Variant: {{productDetails.variants.size[rating.variantIndex].variant_name}}
+                     </p>
+                    <p>
+                      {{rating.timestamp | date}}
+                    </p>
+                  </ion-label>
+                </ion-item>
+              </ng-container>
+              <ng-template #noVariant>
+                <ion-item>
+                  <ion-avatar slot="start">
+                    <img [src]="rating.clientData.profilePic"/>
+                  </ion-avatar>
+                  <ion-label>
+                    <h1 style="white-space: normal;">
+                      {{rating.review}}
+                    </h1>
+                    <app-review-icons [rating]="rating.rating" [outOf]="5">
+                    </app-review-icons>
+                    <h3>
+                    From: {{rating.clientData.fullname.first}} {{rating.clientData.fullname.middleInitial}} {{rating.clientData.fullname.last}}
+                    </h3>
+                    <p>
+                      {{rating.timestamp | date}}
+                    </p>
+                  </ion-label>
+                </ion-item>
+              </ng-template>
+            </ng-container>
+          </ng-container>
+          <ng-template #noReview>
+            <h6 class="ion-padding" style="padding-top: 0; padding-bottom: 0; margin-top: 0; ">
+              No Reviews
+            </h6>
+          </ng-template>
+        </ion-list>
+      </ng-container>
+   
+      <ng-template #noReview>
+        <h6 class="ion-padding" style="padding-top: 0; padding-bottom: 0; margin-top: 0; ">
+          No Reviews
+        </h6>
+      </ng-template>
+      <!-- -----------suggestions--------------- -->
+      <ng-container>
+        <h5 class="ion-padding" style="padding-top: 0; padding-bottom: 0; font-weight: bold;">
+          You might also like
+        </h5>
+        <ion-row>
+          <ng-container *ngFor="let suggest of getByCat(productDetails.category)">
+            <ion-col size="6">
+              <ion-card class="ion-activatable ripple-parent rectangle" style="margin: 3px;" color="light" (click)="goToProd(suggest)">
+                <ion-ripple-effect></ion-ripple-effect>
+                <ion-img [src]="getFirstImageRef(suggest)" style="height: 180px;"></ion-img>
+                <ion-card-header>
+                  <div class="prodDetails">
+                    {{suggest.name}}
+                  </div>
+                  <div>
+                    <ion-text style="font-size: medium; text-align: left;">{{getMinMaxPrice(suggest, true)}}</ion-text>
+                  </div>
+                  <!-- <ng-container *ngIf="prod.variants?.[0] as firstVariant; else noVariant">
+                    <app-review-icons [rating]="firstVariant.totalRating ?? 0" [outOf]="5">
+                    </app-review-icons>
+                  </ng-container> -->
+                  <!-- <ng-template #noVariant>
+                    <app-review-icons [rating]="prod.totalRating ?? 0" [outOf]="5">
+                    </app-review-icons>
+                  </ng-template> -->
+                </ion-card-header>
+              </ion-card>
+            </ion-col>
+          </ng-container>
+        </ion-row>
+      </ng-container>
+      
+
+    </div>
+  </ng-container>
+</ion-content>

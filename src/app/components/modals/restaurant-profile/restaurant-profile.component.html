@@ -1,0 +1,136 @@
+<ion-header>
+  <ion-toolbar style="background-color: #f00062; color: white;" class="resProf">
+    <ion-buttons slot="start" (click)="back()">
+      <ion-icon name="chevron-back-outline"></ion-icon>
+      Back
+    </ion-buttons>
+    <ion-title> {{restaurantData.bname}}</ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content [fullscreen]="false">
+  <ion-header collapse="condense" style="background-color: #f00062;">
+    <ion-toolbar style="--background: #f00062;">
+      <ion-title size="large" style="padding: 0; color: white;">
+        {{restaurantData.bname}}
+      </ion-title>
+    </ion-toolbar>
+    <div style="font-size: 12px; padding: 10px;color: white;">
+      {{restaurantData.address?.completeAddress}}
+    </div>
+  </ion-header>
+
+
+  <div style="padding: 10px 10px 0 10px">
+    Featured Items
+  </div>
+<!--
+  <app-carousel *ngIf="productTtems" [contentArray]="productTtems" type="products">
+  </app-carousel> -->
+
+  <div style="display: flex; justify-content: space-between;padding-bottom: 0; padding: 10px 10px 0 10px;">
+    <h6 style="margin: 0; font-weight: 600 !important">
+      Menu
+    </h6>
+    <div style="color: #f51042; font-weight: 600 !important; font-size: 12px;">
+      View All >>
+    </div>
+  </div>
+
+  <ion-list>
+    <ion-item-group *ngFor="let sort of prodSorted">
+
+      <ion-item-divider>
+        <ion-label>
+         {{sort.cat}}
+        </ion-label>
+      </ion-item-divider>
+
+      <ng-container *ngFor="let item of sort.products;let i = index" >
+        <ion-item *ngIf="!item.variants; else elseBlock" lines="none"> <!---->
+          <ion-avatar slot="start">
+            <img [src]="item.image? 'data:image/png;base64,'+item.image : 'assets/images/no_src.webp'" />
+          </ion-avatar>
+          <ion-label>
+            {{item.name}}
+          </ion-label>
+
+          <ion-button slot="end" (click)="addToCart(item)" *ngIf="checkInCart(item.id);else inCart" style="margin: 0;height: -webkit-fill-available; padding: 5px 0; font-weight: bolder;" >
+            Add to Cart
+          </ion-button>
+          <ng-template #inCart>
+            <div style="padding: 5px 10px; border: solid 2px; border-radius: 10%; color: #f51042; font-weight: bold;">
+              In Cart
+            </div>
+          </ng-template>
+        </ion-item>
+
+        <ng-template #elseBlock>
+          <ion-accordion-group>
+            <ion-accordion>
+              <ion-item slot="header">
+                <ion-avatar slot="start">
+                  <img [src]="item.image? 'data:image/png;base64,'+item.image : 'assets/images/no_src.webp'" />
+                </ion-avatar>
+                <ion-label>
+                  {{item.name}}
+                </ion-label>
+                <div style="display: flex; align-items: center;">
+                  <div style="font-size: 12px;">
+                    Variants
+                  </div>
+                  <ion-icon name="chevron-up-circle-outline" class="ion-accordion-toggle-icon" >
+                  </ion-icon>
+                </div>
+              </ion-item>
+              <ion-item *ngFor="let vart of item.variants" slot="content" lines="none">
+                <ion-label>
+                  {{vart.name}} {{vart.value | currency:'PHP'}}
+                </ion-label>
+                <ion-button slot="end" (click)="addToCart(item,vart)" *ngIf="checkInCart(item.id,vart.name); else inCart" style="margin: 0; height: -webkit-fill-available;padding: 5px 0;font-weight: bolder;">
+                  Add to Cart
+                </ion-button>
+                <ng-template #inCart>
+                  <div style="padding: 5px 10px; border: solid 2px; border-radius: 10%; color: #f51042; font-weight: bold;">
+                    In Cart
+                  </div>
+                </ng-template>
+              </ion-item>
+            </ion-accordion>
+          </ion-accordion-group>
+        </ng-template>
+      </ng-container>
+    </ion-item-group>
+  </ion-list>
+
+  <ion-card style="background: #28a745; position: sticky; bottom: 10px;" *ngIf="this.cart?.status === 0" (click)="goToCart()">
+    <div style="display: flex;justify-content: space-between;align-items: center; padding: 10px;">
+      <div style="display: flex;">
+        <div style="padding: 10px;border-right: 1px solid #edeff1 !important;">
+          <ion-icon name="bag-handle-outline" size="large" style="color: white;"></ion-icon>
+        </div>
+        <div style="padding: 10px;color: white">
+          <div>
+             {{ cart.items.length}} {{ cart.items.length > 1 ? 'Items': 'Item'}}
+          </div>
+          <div>
+            {{ total |currency:'PHP'}}
+
+          </div>
+          <div>
+          </div>
+        </div>
+      </div>
+
+      <div style="color: white;display: flex; align-items: center;">
+        Proceed to Cart
+        <ion-icon name="chevron-forward-outline"></ion-icon>
+      </div>
+    </div>
+
+  </ion-card>
+
+
+</ion-content>
+
+
+

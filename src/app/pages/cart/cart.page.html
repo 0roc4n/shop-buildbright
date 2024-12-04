@@ -1,0 +1,283 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="back()" >
+        <ion-icon name="chevron-back-outline"></ion-icon>
+        Order
+      </ion-button>
+    </ion-buttons>
+    <!-- <ion-title>cart</ion-title> -->
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+<!--Cancelled-->
+  <ng-container *ngIf="currentOrders?.status < 0">
+    <div>
+      Cancelled
+    </div>
+  </ng-container>
+<!--Cart-->
+  <ng-container *ngIf="currentOrders?.status === 0">
+
+    <ion-card>
+      <ion-item lines="none" detail="true" class="rest-item">
+        <ion-avatar>
+          <img [src]="'data:image/png;base64,'+restaurantData.image" />
+        </ion-avatar>
+        <ion-label style="padding-left: 10px;">
+          <h2 style="font-weight: 700;">{{restaurantData.bname}}</h2>
+          <p> {{restaurantData.address.completeAddress}}</p>
+        </ion-label>
+      </ion-item>
+    </ion-card>
+
+
+    <ion-card>
+      <ion-card-header style="display: flex; justify-content: space-between; padding-bottom: 0;">
+        <ion-card-subtitle>Delivery Address</ion-card-subtitle>
+        <ion-icon name="add-circle-outline"></ion-icon>
+      </ion-card-header>
+      <ion-card-content style="padding: 0;">
+        <ion-card style="margin-top: 10px;">
+          <app-map [clientAddressPosition]="userData?.address[addressSelection.value].coordinates"
+                   [draggable]="false"
+                   [zoom]="15"
+                   height="250px">
+          </app-map>
+        </ion-card>
+      </ion-card-content>
+
+      <ion-radio-group [formControl]="addressSelection">
+        <ion-item *ngFor="let addr of userData?.address; let i = index" lines="none">
+          <ion-icon name="home-outline" size="small" slot="start"></ion-icon>
+          <ion-label>
+            <h2>
+              {{addr.nickname}}
+            </h2>
+            <p style="font-size: 12px;">
+              {{addr.deliveryArea}}
+            </p>
+          </ion-label>
+          <ion-radio slot="end" [value]="i" mode="md" color="dark"></ion-radio>
+        </ion-item>
+      </ion-radio-group>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-subtitle>Items</ion-card-subtitle>
+      </ion-card-header>
+      <ion-item *ngFor="let ord of currentOrders?.items; let itemIndex = index" lines="none">
+        <ion-icon name="fast-food-outline" size="small" slot="start"></ion-icon>
+        <div style="width: -webkit-fill-available; ">
+          <ion-row>
+            <ion-col size="6" style="padding: 0; font-size: 12px; display: flex; align-items: center;">
+              {{ord.name}}
+            </ion-col>
+            <ion-col size="3" style="padding: 0; font-size: 12px; display: flex; align-items: center;">
+              <ion-button (click)="subtractQuantity(itemIndex)">
+                -
+              </ion-button>
+              <div>
+               {{ord.qty}}
+              </div>
+              <ion-button (click)="addQuantity(itemIndex)">
+                +
+              </ion-button>
+            </ion-col>
+            <ion-col size="3" style="padding: 0;font-size: 12px; display: flex; align-items: center; justify-content: flex-end; ">
+              {{ord.unitPrice | currency: 'PHP'}}
+            </ion-col>
+          </ion-row>
+        </div>
+      </ion-item>
+    </ion-card>
+
+
+    <ion-card style="padding: 5px;">
+      <div style="padding: 5px; display: flex; justify-content: space-between;">
+        <div>
+          Item Total
+        </div>
+        <div>
+          {{ paymentData!.itemCharges  | currency: "PHP"}}
+        </div>
+      </div>
+
+      <div style="padding: 5px; display: flex; justify-content: space-between;">
+        <div>
+          ResTaurant Charges
+        </div>
+        <div>
+          {{ paymentData!.charges | currency: "PHP"}}
+        </div>
+      </div>
+
+      <div style="padding: 5px; display: flex; justify-content: space-between;">
+        <div>
+          Delivery Fee
+        </div>
+        <div>
+          {{ paymentData!.deliveryFee | currency: "PHP"}}
+        </div>
+      </div>
+
+      <div style="padding: 5px; display: flex; justify-content: space-between;">
+        <div>
+          Total Discount
+        </div>
+        <div>
+          - {{ paymentData!.totalDiscount| currency: "PHP"}}
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; border-top: solid black; border-width: thin;">
+        <h5 style="padding-left: 5px; font-weight: 700; color: black;">
+          TO PAY
+        </h5>
+        <h5 style="padding-right: 5px; font-weight: 700; color: black;">
+          {{ paymentData!.totalPayment| currency: "PHP"}}
+        </h5>
+      </div>
+    </ion-card>
+
+    <ion-card style="background: #28a745; position: sticky; bottom: 10px;" (click)="goToCheckOut()">
+      <div style="display: flex;justify-content: space-between;align-items: center; padding: 10px;">
+        <div style="display: flex;">
+          <div style="padding: 10px;border-right: 1px solid #edeff1 !important;">
+            <ion-icon name="bag-handle-outline" size="large" style="color: white;"></ion-icon>
+          </div>
+          <div style="padding: 10px;color: white">
+            <div>
+              {{this.currentOrders?.items.length}} {{this.currentOrders?.items.length > 1 ? "Items" : "Item"}}
+            </div>
+            <div>
+              {{paymentData.totalPayment | currency: "PHP"}}
+            </div>
+            <div>
+            </div>
+          </div>
+        </div>
+
+        <div style="color: white;display: flex; align-items: center;">
+          Proceed to Checkout
+          <ion-icon name="chevron-forward-outline"></ion-icon>
+        </div>
+      </div>
+
+    </ion-card>
+
+
+  </ng-container>
+
+<!--Preparing-->
+<ng-container *ngIf="currentOrders?.status > 0">
+  <ion-card>
+    <ion-img *ngIf="currentOrders?.status  <= 2; else mapView" src="https://i.pinimg.com/originals/fa/87/6f/fa876ffaf00c3a6645fe43a56aa10fe3.gif"></ion-img>
+    <ng-template #mapView>
+      <app-map
+        [clientAddressPosition]="currentOrders?.deliveryAddress.coordinates"
+        [riderPosition]="riderLocation">
+
+      </app-map>
+    </ng-template>
+    <div style="text-align: center;">
+      <h2 style="margin-bottom: 0;">
+      {{getStatusResponse()}}
+      </h2>
+      <div style="padding-bottom: 5px;">
+        Est. Delivery Time: 15 - 20 mins.
+      </div>
+    </div>
+  </ion-card>
+
+  <ion-card>
+    <ion-card-header style="padding: 10px;">
+      <ion-card-subtitle>Order Details</ion-card-subtitle>
+    </ion-card-header>
+    <ion-row>
+      <ion-col size="4">
+        Restaurant
+      </ion-col>
+      <ion-col size="8" style="text-align:end">
+        {{restaurantData?.bname}}
+      </ion-col>
+    </ion-row>
+    <ion-row style="border-bottom: solid #c7adad;; border-width: thin;">
+      <ion-col size="4">
+        Delivery Address
+      </ion-col>
+      <ion-col size="8" style="text-align:end">
+        {{currentOrders?.deliveryAddress.completeAddress}}
+        {{currentOrders?.deliveryAddress.deliveryArea}}
+      </ion-col>
+    </ion-row>
+
+    <ion-row *ngFor="let ordItem of currentOrders?.items">
+      <ion-col size="6">
+        {{ordItem.qty}} x {{ordItem.name}}
+      </ion-col>
+      <ion-col size="6" style="text-align:end">
+        {{ordItem.qty * ordItem.unitPrice |currency: "PHP"}}
+      </ion-col>
+    </ion-row>
+  </ion-card>
+
+  <ion-card>
+    <ion-card-header style="padding: 10px;">
+      <ion-card-subtitle>Payment Summary</ion-card-subtitle>
+    </ion-card-header>
+
+    <ion-row>
+      <ion-col size="6">
+        Item Total
+      </ion-col>
+      <ion-col size="6" style="text-align:end">
+        {{currentOrders?.paymentData.itemTotal|currency: "PHP"}}
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size="6">
+        Restaurant Charges
+      </ion-col>
+      <ion-col size="6" style="text-align:end">
+        {{currentOrders?.paymentData.totalCharges|currency: "PHP"}}
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size="6">
+        Delivery Fee
+      </ion-col>
+      <ion-col size="6" style="text-align:end">
+        {{currentOrders?.paymentData.deliveryFee|currency: "PHP"}}
+      </ion-col>
+    </ion-row>
+    <ion-row style="border-bottom: solid #c7adad;; border-width: thin;">
+      <ion-col size="6">
+        Total Discount
+      </ion-col>
+      <ion-col size="6" style="text-align:end">
+    {{currentOrders?.paymentData.totalDiscount|currency: "PHP"}}
+      </ion-col>
+    </ion-row>
+    <ion-row >
+      <ion-col ssize="6">
+        TO PAY
+      </ion-col>
+      <ion-col size="6" style="text-align:end">
+        {{currentOrders?.paymentData.toPay|currency: "PHP"}}
+      </ion-col>
+    </ion-row>
+  </ion-card>
+
+  <div style="display: flex; justify-content: center;">
+    <ion-button color="secondary">
+      CANCEL ORDER
+    </ion-button>
+  </div>
+
+</ng-container>
+
+
+</ion-content>

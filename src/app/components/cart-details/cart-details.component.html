@@ -1,0 +1,939 @@
+<ng-container *ngIf="(currentOrder$ | async) as currentOrder;else emptyCart">
+
+  <ng-container *ngIf="currentOrder === 'loading'">
+    Loading Cart Details
+  </ng-container>
+
+
+  <ng-container *ngIf="currentOrder.status < 0">
+    <ng-container *ngIf="currentOrder.status === -1; else declined">
+      <ion-card>
+        <ion-item lines="none">
+          <ion-icon slot="start" name="close-circle-outline" size="large" style="color: red;"></ion-icon>
+          <ion-label>
+            <h1 style="overflow: visible;white-space: normal;">
+              You cancelled your order...
+            </h1>
+          </ion-label>
+        </ion-item>
+      </ion-card>
+    </ng-container>
+    <ng-template #declined>
+      <ion-card>
+        <ion-item lines="none">
+          <ion-icon slot="start" name="close-circle-outline" size="large" style="color: red;"></ion-icon>
+          <ion-label>
+            <h1 style="overflow: visible;white-space: normal;">
+              Your Order has been Declined by Store
+            </h1>
+          </ion-label>
+        </ion-item>
+
+        <div class="ion-padding" style="padding-top: 0;">
+          <h6 class="ion-no-margin">
+            with the following reason:
+          </h6>
+          <h6 class="ion-no-margin">
+            <strong>{{currentOrder.declineReason}}</strong>
+          </h6>
+        </div>
+      </ion-card>
+
+    </ng-template>
+
+    <ion-card>
+      <ion-item lines="none">
+        <ion-icon slot="start" name="cart-outline" size="large" color="primary"></ion-icon>
+        <ion-label>
+          <h1 style="overflow: visible;white-space: normal;">
+           But you can still order...
+          </h1>
+          <h2 style="overflow: visible;white-space: normal;">
+            Go to home or search for products and add to cart!
+          </h2>
+        </ion-label>
+      </ion-item>
+    </ion-card>
+  </ng-container>
+
+  <ng-container *ngIf="currentOrder.status === 0">
+
+    <!-- <ion-card>
+      <ion-card-header>
+        <ion-card-subtitle>Shopping from:</ion-card-subtitle>
+        <ion-card-title>{{currentOrder.storeInfo.bname}}</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        {{currentOrder.storeInfo.address.completeAddress}}
+      </ion-card-content>
+    </ion-card> -->
+    <ion-card>
+      <ion-radio-group [formControl]="method">
+        <ion-list-header>
+          <ion-label>Method</ion-label>
+        </ion-list-header>
+        <ion-item lines="none">
+          <ion-icon name="car-outline" slot="start" size="small"></ion-icon>
+          <ion-label>Delivery</ion-label>
+          <ion-radio value="delivery" mode="md"></ion-radio>
+        </ion-item>
+        <ion-item lines="none">
+          <ion-icon name="hand-right-outline" slot="start" size="small"></ion-icon>
+          <ion-label>For Pickup</ion-label>
+          <ion-radio value="pickup" mode="md"></ion-radio>
+        </ion-item>
+      </ion-radio-group>
+    </ion-card>
+
+
+    <ion-card *ngIf="method.value === 'delivery'">
+      <ion-card-header style="display: flex; justify-content: space-between; padding-bottom: 0;">
+        <ion-card-subtitle>Delivery Address</ion-card-subtitle>
+        <!-- <ion-icon name="add-circle-outline"></ion-icon> -->
+      </ion-card-header>
+      <ion-card-content style="padding: 0;">
+        <ion-card style="margin-top: 10px;">
+          <ng-container *ngIf="addressSelection.value >= 0; else currLocation">
+            <app-map
+              [clientAddressPosition]="currentOrder.clientInfo.address[addressSelection.value].coordinates"
+              [storePosition]="currentOrder.storeInfo.branches[0].coordinates"
+            >
+            </app-map>
+
+            <!-- <google-map [options]="mapOptions" height="300px" width="100%" [center]="currentOrder.clientInfo.address[addressSelection.value].coordinates" (mapInitialized)="mapInitialized($event)" #mapRef="googleMap">
+              <map-marker
+                [position]="currentOrder.clientInfo.address[addressSelection.value].coordinates"
+                [icon]="googleMapPins.clientPin"
+                #currentMarker="mapMarker">
+              </map-marker>
+            </google-map> -->
+          </ng-container>
+          <ng-template #currLocation>
+            <ng-container *ngIf="(currentAddress$ | async) as currentAddress;else noLocation">
+              <app-map
+              [clientAddressPosition]="currentAddress.coordinates"
+              [storePosition]="currentOrder.storeInfo.branches[0].coordinates"
+              >
+            </app-map>
+              <!-- <google-map [options]="mapOptions" height="300px" width="100%" [center]="currentAddress.coordinates" (mapInitialized)="mapInitialized($event)" #mapRef="googleMap"  >
+                <map-marker
+                  [position]="currentAddress.coordinates"
+                  [icon]="googleMapPins.clientPin"
+                  #currentMarker="mapMarker">
+                </map-marker>
+              </google-map> -->
+            </ng-container>
+            <ng-template #noLocation>
+             <ion-card-header>
+              <ion-card-title>No Location Found</ion-card-title>
+             </ion-card-header>
+            </ng-template>
+
+          </ng-template>
+        </ion-card>
+      </ion-card-content>
+
+        <ion-radio-group [formControl]="addressSelection">
+          <ion-item lines="none">
+            <ion-icon name="location-outline" slot="start"></ion-icon>
+            <ion-label>
+              <h2>
+                Your Current Location
+              </h2>
+              <p style="font-size: 12px;">
+                {{(currentAddress$ | async)?.completeAddress}}
+              </p>
+            </ion-label>
+            <ion-radio slot="end" [value]="-1" mode="md"></ion-radio>
+          </ion-item>
+
+          <ion-item *ngFor="let addr of currentOrder.clientInfo.address; let i = index" lines="none">
+            <ion-icon name="compass-outline" slot="start"></ion-icon>
+            <!-- <ion-icon name="home-outline" ></ion-icon> -->
+            <ion-label>
+              <h2>
+                {{addr.label}}
+              </h2>
+              <p style="font-size: 12px;">
+                {{addr.completeAddress}}
+              </p>
+            </ion-label>
+            <ion-radio slot="end" [value]="i" mode="md" (click)="distanceCalculation(addr.coordinates)"></ion-radio>
+          </ion-item>
+        </ion-radio-group>
+      <ion-button (click)="addAddress(currentOrder.clientInfo.address.length)" expand="block">
+        Add Address
+      </ion-button>
+    </ion-card>
+
+    <ng-container *ngIf="currentOrder.quotation as quotation; else noQuotation">
+      <ion-card>
+        <ion-card-header>
+          <ion-card-subtitle>Quotation {{quotation.status}}</ion-card-subtitle>
+        </ion-card-header>
+        <ion-card-content>
+          <h3 *ngIf="quotation.status === 'pending'">
+            Waiting for store confirmation
+          </h3>
+          <h3 *ngIf="quotation.status === 'offered'">
+            Store offered these prices
+          </h3>
+
+          <ng-container *ngFor="let ord of currentOrder.items; let itemIndex = index">
+            <ng-container *ngIf="ord.variants; else noVariants">
+              <ion-item lines="none" *ngFor="let variant of ord.variants;let varInd = index">
+                <ion-icon name="pricetag-outline" size="small" slot="start"></ion-icon>
+                <div style="width: -webkit-fill-available; ">
+                  <ion-row>
+                    <ng-container *ngIf="variant.bulk_price !== null ||variant.bulk_price !== undefined; else noOfferVar">
+                      <ion-col size="4" style="padding: 0; font-size: 12px; display: flex; align-items: center;">
+                        {{ord.productDetails.name}} {{ord.productDetails.variants[variant.variantIndex].variant_name}}
+                      </ion-col>
+                      <ion-col size="4" style="padding: 0; font-size: 12px; display: flex; align-items: center; justify-content: center;">
+                        x  {{variant.quantity}}
+                      </ion-col>
+                      <ion-col size="4" style="padding: 0; font-size: 12px; display: flex; align-items: center; justify-content: center;">
+                        {{variant.bulk_price | currency:"PHP"}}
+                      </ion-col>
+                    </ng-container>
+                    <ng-template #noOfferVar>
+                      <ion-col size="6" style="padding: 0; font-size: 12px; display: flex; align-items: center;">
+                        {{ord.productDetails.name}} {{ord.productDetails.variants[variant.variantIndex].variant_name}}
+                      </ion-col>
+                      <ion-col size="6" style="padding: 0; font-size: 12px; display: flex; align-items: center; justify-content: center;">
+                        x  {{variant.quantity}}
+                      </ion-col>
+                    </ng-template>
+
+                  </ion-row>
+                </div>
+              </ion-item>
+            </ng-container>
+            <ng-template #noVariants>
+              <ion-item lines="none">
+                <ion-icon name="pricetag-outline" size="small" slot="start"></ion-icon>
+                <div style="width: -webkit-fill-available; ">
+                  <ion-row>
+                    <ng-container *ngIf="ord.bulk_price !== null || ord.bulk_price !== undefined ">
+                      <ion-col size="4" style="padding: 0; font-size: 12px; display: flex; align-items: center;">
+                        {{ord.productDetails.name}}
+                      </ion-col>
+                      <ion-col size="4" style="padding: 0; font-size: 12px; display: flex; align-items: center; justify-content: center;">
+                        x  {{ord.quantity}}
+                      </ion-col>
+                      <ion-col size="4" style="padding: 0; font-size: 12px; display: flex; align-items: center; justify-content: center;">
+                        {{ord.bulk_price| currency: "PHP"}}
+                      </ion-col>
+                    </ng-container>
+                    <ng-template>
+                      <ion-col size="6" style="padding: 0; font-size: 12px; display: flex; align-items: center;">
+                        {{ord.productDetails.name}}
+                      </ion-col>
+                      <ion-col size="6" style="padding: 0; font-size: 12px; display: flex; align-items: center; justify-content: center;">
+                        x  {{ord.quantity}}
+                      </ion-col>
+                    </ng-template>
+
+                  </ion-row>
+                </div>
+              </ion-item>
+            </ng-template>
+          </ng-container>
+
+          <ng-container *ngIf="(calculatedPriceDistance$|async) as calculatedPrice;">
+            <ng-container *ngIf="calculatedPrice === 'calculating'; else notCalculating">
+              <ion-item lines="none">
+                <ion-label>
+                  <h2>
+                    Calculating...
+                  </h2>
+                </ion-label>
+              </ion-item>
+            </ng-container>
+            <ng-template #notCalculating>
+              <ng-container *ngIf="calculatedPrice === 'error'; else notError">
+                <ion-item>
+                  <ion-label>
+                    <h2 color="danger">
+                      Something went wrong
+                    </h2>
+                  </ion-label>
+                </ion-item>
+              </ng-container>
+              <ng-template #notError>
+
+                <ng-container *ngIf="calculatedPrice.calculated.price === 'too_far' else notFar">
+                  <div class="ion-padding" style="padding-top: 0;padding-bottom:0; display: flex; justify-content: space-between;">
+                    <h6 class="ion-no-margin">
+                      Delivery Fee
+                    </h6>
+                    <h6 class="ion-no-margin" >
+                      Too Far. Status Pending
+                    </h6>
+                  </div>
+                  <div class="ion-padding" style=" display: flex; justify-content: space-between;">
+                    <h4 class="ion-no-margin">
+                      Total Payment
+                    </h4>
+                    <h4 class="ion-no-margin">
+                      {{ paymentData(currentOrder,false) | currency: "PHP" }}
+                    </h4>
+                  </div>
+                </ng-container>
+                <ng-template #notFar>
+                  <div class="ion-padding" style="padding-top: 0;padding-bottom:0; display: flex; justify-content: space-between;">
+                    <h6 class="ion-no-margin">
+                      Delivery Fee
+                    </h6>
+                    <h6 class="ion-no-margin">
+                      {{calculatedPrice.calculated.price | currency:"PHP"}}
+                    </h6>
+                  </div>
+                  <div class="ion-padding" style=" display: flex; justify-content: space-between;">
+                    <h4 class="ion-no-margin">
+                      Total Payment
+                    </h4>
+                    <h4 class="ion-no-margin">
+                      {{ paymentData(currentOrder, true) + calculatedPrice.calculated.price | currency: "PHP" }}
+                    </h4>
+                  </div>
+                </ng-template>
+              </ng-template>
+            </ng-template>
+          </ng-container>
+        </ion-card-content>
+      </ion-card>
+
+      <ion-card *ngIf="quotation.status!== 'offered'">
+        <ion-card-header>
+          <ion-card-subtitle>Messages</ion-card-subtitle>
+        </ion-card-header>
+        <ion-card-content>
+          <div style="max-height: 300px; overflow-y: scroll;">
+            <div *ngFor="let message of quotation.messages" >
+              <div [ngClass]="{'client-message': message.from === 'client','store-message':message.from === 'store' }" *ngIf="!message?.invisibleClient">
+                {{message.message}}
+                <p>
+                  {{message.timestamp | date : "MMM d, y, h:mm a"}}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <ion-item mode="md" fill="outline" style="padding-top: 20px;" *ngIf="quotation.status!== 'offered'">
+            <ion-label position="floating">Send Message</ion-label>
+            <ion-input [formControl]="chatMessageInput" (keyup.enter)="sendQuotationMessage(currentOrder.id,quotation.messages)"></ion-input>
+            <ion-icon name="send-outline" slot="end" style="cursor: pointer;" (click)="sendQuotationMessage(currentOrder.id,quotation.messages)"></ion-icon>
+          </ion-item>
+        </ion-card-content>
+      </ion-card>
+
+      <ion-card *ngIf="quotation.status==='offered' && openPaymentComponent">
+        <ion-card-header style="display: flex; align-items: center; justify-content: space-between;">
+          <ion-card-subtitle>Payment Details</ion-card-subtitle>
+          <ion-button (click)="cancelPaymentDetails()">
+            Cancel
+          </ion-button>
+        </ion-card-header>
+        <ion-card-content>
+          <!-- <ion-list>
+            <ion-radio-group [formControl]="method">
+              <ion-list-header>
+                <ion-label>Method</ion-label>
+              </ion-list-header>
+              <ion-item lines="none">
+                <ion-icon name="cash-outline" slot="start" size="small"></ion-icon>
+                <ion-label>Delivery</ion-label>
+                <ion-radio value="delivery" mode="md"></ion-radio>
+              </ion-item>
+              <ion-item lines="none">
+                <ion-icon name="card-outline" slot="start" size="small"></ion-icon>
+                <ion-label>Pickup</ion-label>
+                <ion-radio value="pickup" mode="md"></ion-radio>
+              </ion-item>
+            </ion-radio-group>
+          </ion-list> -->
+
+          <ion-list>
+            <ion-radio-group [formControl]="deliveryDateType">
+              <ion-list-header>
+                <ion-label>Delivery Date:</ion-label>
+              </ion-list-header>
+              <ion-item>
+                <ion-icon name="alarm-outline" slot="start" size="small"></ion-icon>
+                <ion-label>Same Day</ion-label>
+                <ion-radio mode="md" value="same_day"></ion-radio>
+              </ion-item>
+              <ion-item>
+                <ion-icon name="calendar-outline" slot="start" size="small"></ion-icon>
+                <ion-label>Set Date</ion-label>
+                <ion-radio mode="md" value="set_date"></ion-radio>
+              </ion-item>
+            </ion-radio-group>
+            <ion-item *ngIf="deliveryDateType.value === 'set_date'" lines="none">
+              <ion-label>Select Date</ion-label>
+              <ion-datetime-button datetime="datetime"></ion-datetime-button>
+              <ion-modal [keepContentsMounted]="true">
+                <ng-template>
+                  <ion-datetime [showDefaultButtons]="true" presentation="date" id="datetime"[min]="dateToday" [formControl]="deliveryDate"></ion-datetime>
+                </ng-template>
+              </ion-modal>
+            </ion-item>
+          </ion-list>
+
+          <ion-button (click)="proceedToCheckOut(currentOrder,currentOrder.clientInfo.address)"  expand="block" [disabled]="!(method.valid && deliveryDateType.valid)" > <!--placeOrderQuotation(currentOrder.clientInfo.address,currentOrder)-->
+            Proceed to Checkout
+          </ion-button>
+        </ion-card-content>
+      </ion-card>
+
+      <div style="display: flex; justify-content: space-evenly;" *ngIf="quotation.status==='offered' && !openPaymentComponent">
+        <ion-button (click)="cancelQuotation(currentOrder)">
+          Cancel Quotation
+        </ion-button>
+        <ng-container>
+          <ion-button (click)="declineOffer(currentOrder.id, quotation.messages)">
+            Decline Offer
+          </ion-button>
+          <ion-button (click)="openPaymentComponent = true">
+            Accept Offer
+          </ion-button>
+        </ng-container>
+      </div>
+    </ng-container>
+    <ng-template #noQuotation>
+      <ion-card>
+        <ion-card-header>
+          <ion-card-subtitle>
+            Purchase type:
+          </ion-card-subtitle>
+        </ion-card-header>
+        <ion-list>
+          <ion-radio-group [formControl]="purchase_type">
+            <ion-item lines="none">
+              <ion-icon name="pricetag-outline" slot="start" size="small"></ion-icon>
+              <ion-label>Per Individual</ion-label>
+              <ion-radio value="ind" mode="md"></ion-radio>
+            </ion-item>
+            <ion-item lines="none">
+              <ion-icon name="pricetags-outline" slot="start" size="small"></ion-icon>
+              <ion-label>In Bulk</ion-label>
+              <ion-radio value="blk" mode="md"></ion-radio>
+            </ion-item>
+          </ion-radio-group>
+          <ion-item fill="outline" mode="md" *ngIf="purchaseTypeVar === 'blk'" lines="none">
+            <ion-label position="floating">Send Message</ion-label>
+            <ion-input [formControl]="chatMessageInput" placeholder="Enter text"></ion-input>
+          </ion-item>
+        </ion-list>
+      </ion-card>
+
+      <ion-card *ngIf="!currentOrder.voucherId">
+        <ion-card-header>
+          <ion-card-subtitle>
+            Apply Voucher
+          </ion-card-subtitle>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-list>
+            <ion-item lines="none">
+              <ion-select placeholder="Voucher" [formControl]="voucherSelection">
+                <ng-container  *ngFor="let voucher of (vouchers$ | async)">
+                  <ng-container *ngIf="voucher.voucherDiscountType === 'flat'">
+                    <ion-select-option [value]="voucher.id">
+                      <h3>
+                        {{voucher.voucherCode}}
+                      </h3>
+                      <h4>
+                        -{{voucher.voucherDiscountValue| currency:"PHP"}}
+                      </h4>
+                    </ion-select-option>
+                  </ng-container>
+                  <ng-container *ngIf="voucher.voucherDiscountType === 'percentage'">
+                    <ion-select-option [value]="voucher.id">
+                      <h3>
+                        {{voucher.voucherCode}}
+                      </h3>
+                      <h4>
+                        -{{voucher.voucherDiscountValue}} %
+                      </h4>
+                    </ion-select-option>
+                  </ng-container>
+                </ng-container>
+              </ion-select>
+            </ion-item>
+          </ion-list>
+          <ion-button (click)="applyVoucher(currentOrder.id, currentOrder.storeId)" expand="block" [disabled]="!voucherSelection.valid">
+            Apply Voucher
+          </ion-button>
+        </ion-card-content>
+      </ion-card>
+
+      <ion-card *ngIf="purchaseTypeVar === 'ind'">
+        <ion-list>
+          <ion-list>
+            <ion-radio-group [formControl]="deliveryDateType">
+              <ion-list-header>
+                <ion-label>Delivery Date:</ion-label>
+              </ion-list-header>
+              <ion-item lines="none">
+                <ion-icon name="alarm-outline" slot="start" size="small"></ion-icon>
+                <ion-label>Same Day</ion-label>
+                <ion-radio mode="md" value="same_day"></ion-radio>
+              </ion-item>
+              <ion-item lines="none">
+                <ion-icon name="calendar-outline" slot="start" size="small"></ion-icon>
+                <ion-label>Set Date</ion-label>
+                <ion-radio mode="md" value="set_date"></ion-radio>
+              </ion-item>
+            </ion-radio-group>
+            <ion-item *ngIf="deliveryDateType.value === 'set_date'" lines="none">
+              <ion-label>Select Date</ion-label>
+              <ion-datetime-button datetime="datetime"></ion-datetime-button>
+              <ion-modal [keepContentsMounted]="true">
+                <ng-template>
+                  <ion-datetime [showDefaultButtons]="true" presentation="date" id="datetime"[min]="dateToday" [formControl]="deliveryDate"></ion-datetime>
+                </ng-template>
+              </ion-modal>
+
+            </ion-item>
+          </ion-list>
+
+           <!-- <ion-radio-group [formControl]="paymentOptions">
+            <ion-list-header>
+              <ion-label>Payment Options</ion-label>
+            </ion-list-header>
+            <ion-item lines="none">
+              <ion-icon name="cash-outline" slot="start" size="small"></ion-icon>
+              <ion-label>Cash</ion-label>
+              <ion-radio value="cash" mode="md"></ion-radio>
+            </ion-item>
+            <ion-item lines="none">
+              <ion-icon name="card-outline" slot="start" size="small"></ion-icon>
+              <ion-label>Paypal</ion-label>
+              <ion-radio value="paypal" mode="md"></ion-radio>
+            </ion-item>
+          </ion-radio-group> -->
+          <!-- <div id="paypal-button-container"></div> -->
+        </ion-list>
+      </ion-card>
+
+      <ion-card>
+        <ion-card-header>
+          <ion-card-subtitle>
+            Items
+          </ion-card-subtitle>
+        </ion-card-header>
+
+        <ng-container *ngFor="let ord of currentOrder.items; let itemIndex = index">
+          <ng-container *ngIf="ord.variants;else noVariants">
+            <ion-item lines="none" *ngFor="let variant of ord.variants;let varInd = index">
+              <ion-icon name="pricetag-outline" size="small" slot="start"></ion-icon>
+              <div style="width: -webkit-fill-available; ">
+                <ion-row>
+                  <ion-col size="6" style="padding: 0; font-size: 12px; display: flex; align-items: center;">
+                    {{ord.productDetails.name}} {{ord.productDetails.variants[variant.variantIndex].variant_name}}
+                  </ion-col>
+                  <ng-container *ngIf="purchaseTypeVar === 'ind'; else singleLayoutVar">
+                    <ion-col size="3" style="padding: 0; font-size: 12px; display: flex; align-items: center; justify-content: center;">
+                      <ion-button (click)="quantityOperation(-1,currentOrder,itemIndex,varInd)" >
+                        -
+                      </ion-button>
+                      <div style="padding: 0 5px;">
+                       {{variant.quantity}}
+                      </div>
+                      <ion-button (click)="quantityOperation(1,currentOrder,itemIndex,varInd)"  [disabled]="disableAddButtons(currentOrder,itemIndex,varInd)"><!---->
+                        +
+                      </ion-button>
+                    </ion-col>
+                    <ion-col size="3" style="padding: 0;font-size: 12px; display: flex; align-items: center; justify-content: center;">
+                      {{variant.price * variant.quantity  | currency: 'PHP'}}
+                    </ion-col>
+                  </ng-container>
+                  <ng-template #singleLayoutVar>
+                    <ion-col size="6" style="padding: 0; font-size: 12px; display: flex; align-items: center; justify-content: center;">
+                      <ion-button (click)="quantityOperation(-1,currentOrder,itemIndex,varInd)" >
+                        -
+                      </ion-button>
+                      <div style="padding: 0 5px;">
+                       {{variant.quantity}}
+                      </div>
+                      <ion-button (click)="quantityOperation(1,currentOrder,itemIndex,varInd)"  [disabled]="disableAddButtons(currentOrder,itemIndex,varInd)"><!---->
+                        +
+                      </ion-button>
+                    </ion-col>
+                  </ng-template>
+                </ion-row>
+              </div>
+            </ion-item>
+          </ng-container>
+          <ng-template #noVariants>
+            <ion-item lines="none">
+              <ion-icon name="pricetag-outline" size="small" slot="start"></ion-icon>
+              <div style="width: -webkit-fill-available; ">
+                <ion-row>
+                  <ion-col size="6" style="padding: 0; font-size: 12px; display: flex; align-items: center;">
+                    {{ord.productDetails.name}}
+                  </ion-col>
+                  <ng-container *ngIf="purchaseTypeVar === 'ind'; else singleLayout">
+                    <ion-col size="3" style="padding: 0; font-size: 12px; display: flex; align-items: center; justify-content: center;">
+                      <ion-button (click)="quantityOperation(-1,currentOrder,itemIndex)"><!--(click)="quantityOperation(-1,ord,currentOrder)"-->
+                        -
+                      </ion-button>
+                      <div style="padding: 0 5px;">
+                       {{ord.quantity}}
+                      </div>
+                      <ion-button (click)="quantityOperation(1,currentOrder,itemIndex)" [disabled]="disableAddButtons(currentOrder,itemIndex)">
+                        +
+                      </ion-button>
+                    </ion-col>
+                    <ion-col size="3" style="padding: 0;font-size: 12px; display: flex; align-items: center; justify-content: center; ">
+                      {{ord.price * ord.quantity| currency: 'PHP'}}
+                    </ion-col>
+                  </ng-container>
+                  <ng-template #singleLayout>
+                    <ion-col size="6" style="padding: 0; font-size: 12px; display: flex; align-items: center; justify-content: center;">
+                      <ion-button (click)="quantityOperation(-1,currentOrder,itemIndex)">
+                        -
+                      </ion-button>
+                      <div style="padding: 0 5px;">
+                       {{ord.quantity}}
+                      </div>
+                      <ion-button (click)="quantityOperation(1,currentOrder,itemIndex)" [disabled]="disableAddButtons(currentOrder,itemIndex)">
+                        +
+                      </ion-button>
+                    </ion-col>
+                  </ng-template>
+                </ion-row>
+              </div>
+            </ion-item>
+          </ng-template>
+        </ng-container>
+
+        <div style="padding-top: 10px;">
+          <div class="ion-padding" style="padding-top: 0;padding-bottom:0; display: flex; justify-content: space-between;" *ngIf="purchaseTypeVar === 'ind';">
+            <h6 class="ion-no-margin">
+              Item Total
+            </h6>
+            <h6 class="ion-no-margin">
+              {{ paymentData(currentOrder, false) | currency: "PHP" }}
+            </h6>
+          </div>
+          <div class="ion-padding" style="padding-top: 0;padding-bottom:0; display: flex; justify-content: space-between;" *ngIf="currentOrder.voucherInfo as voucherInfo">
+            <h6 class="ion-no-margin">
+              Applied Voucher  ({{voucherInfo.voucherCode}})
+            </h6>
+            <h6 class="ion-no-margin" *ngIf="voucherInfo.voucherDiscountType === 'flat'">
+              - {{voucherInfo.voucherDiscountValue | currency:"PHP"}}
+            </h6>
+            <h6 class="ion-no-margin" *ngIf="voucherInfo.voucherDiscountType === 'percentage'">
+              - {{voucherInfo.voucherDiscountValue}}%
+            </h6>
+          </div>
+          <ng-container *ngIf="method.value === 'pickup'">
+            <div class="ion-padding" style=" display: flex; justify-content: space-between;">
+              <h4 class="ion-no-margin">
+                Total Payment
+              </h4>
+              <h4 class="ion-no-margin">
+                {{ paymentData(currentOrder, true) | currency: "PHP" }}
+              </h4>
+            </div>
+          </ng-container>
+          <ng-container *ngIf="method.value === 'delivery'">
+            <ng-container *ngIf="(calculatedPriceDistance$|async) as calculatedPrice;">
+              <ng-container *ngIf="calculatedPrice === 'calculating'; else notCalculating">
+                <ion-item lines="none">
+                  <ion-label>
+                    <h2>
+                      Calculating...
+                    </h2>
+                  </ion-label>
+                </ion-item>
+              </ng-container>
+              <ng-template #notCalculating>
+                <ng-container *ngIf="calculatedPrice === 'error'; else notError">
+                  <ion-item>
+                    <ion-label>
+                      <h2 color="danger">
+                        Something went wrong
+                      </h2>
+                    </ion-label>
+                  </ion-item>
+                </ng-container>
+                <ng-template #notError>
+
+                  <ng-container *ngIf="calculatedPrice.calculated.price === 'too_far' else notFar">
+                    <div class="ion-padding" style="padding-top: 0;padding-bottom:0; display: flex; justify-content: space-between;">
+                      <h6 class="ion-no-margin">
+                        Delivery Fee
+                      </h6>
+                      <h6 class="ion-no-margin" >
+                        Too Far. Status Pending
+                      </h6>
+                    </div>
+                    <div class="ion-padding" style=" display: flex; justify-content: space-between;">
+                      <h4 class="ion-no-margin">
+                        Total Payment
+                      </h4>
+                      <h4 class="ion-no-margin">
+                        {{ paymentData(currentOrder, true) | currency: "PHP" }}
+                      </h4>
+                    </div>
+                  </ng-container>
+                  <ng-template #notFar>
+                    <div class="ion-padding" style="padding-top: 0;padding-bottom:0; display: flex; justify-content: space-between;">
+                      <h6 class="ion-no-margin">
+                        Delivery Fee
+                      </h6>
+                      <h6 class="ion-no-margin">
+                        {{calculatedPrice.calculated.price | currency:"PHP"}}
+                      </h6>
+                    </div>
+                    <div class="ion-padding" style=" display: flex; justify-content: space-between;">
+                      <h4 class="ion-no-margin">
+                        Total Payment
+                      </h4>
+                      <h4 class="ion-no-margin">
+                        {{ paymentData(currentOrder, true) + calculatedPrice.calculated.price | currency: "PHP" }}
+                      </h4>
+                    </div>
+                  </ng-template>
+                </ng-template>
+              </ng-template>
+            </ng-container>
+          </ng-container>
+
+        </div>
+      </ion-card>
+
+      <ion-card>
+        <ion-card-header>
+          <ion-card-subtitle>
+            Special Instructions
+          </ion-card-subtitle>
+        </ion-card-header>
+        <ion-card-content>
+          <ion-textarea style="border: solid 1px;" [formControl]="specialInstructions"></ion-textarea>
+        </ion-card-content>
+      </ion-card>
+
+      <ng-container *ngIf="purchaseTypeVar === 'ind'; else bulkOrder">
+        <ion-button expand="block" [disabled]="(placeOrderValidation$ | async)" (click)="proceedToCheckOut(currentOrder,currentOrder.clientInfo.address)"> <!--placeOrder(currentOrder.clientInfo.address,currentOrder)-->
+          Proceed to Checkout
+        </ion-button>
+      </ng-container>
+      <ng-template #bulkOrder>
+        <ion-button expand="block" (click)="requestQuotation(currentOrder.id)" >
+          Request Quote
+        </ion-button>
+      </ng-template>
+
+
+    </ng-template>
+
+  </ng-container>
+
+
+
+  <ng-container *ngIf="currentOrder?.status > 0">
+    <ion-card>
+      <ng-container *ngIf="currentOrder.status > 2">
+        <app-map
+          [clientAddressPosition]="currentOrder.deliveryAddress?.coordinates"
+          [storePosition]="currentOrder.storeInfo.branches[0].coordinates"
+          [riderPosition]="(riderLocation$ | async)!">
+        </app-map>
+      </ng-container>
+      <div style="text-align: center;">
+        <h2 class="ion-no-margin ion-padding" style="color: black;">
+          {{getStatusResponse(currentOrder)}}
+        </h2>
+      </div>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header style="padding: 10px;">
+        <ion-card-subtitle>Order Details</ion-card-subtitle>
+      </ion-card-header>
+      <ion-row style="padding-left: 5px;padding-right: 5px;">
+        <ion-col size="4">
+          Store
+        </ion-col>
+        <ion-col size="8" style="text-align:end">
+          {{currentOrder.storeInfo.storeName}}
+        </ion-col>
+      </ion-row>
+      <ion-row style="border-bottom: solid #c7adad; border-width: thin; padding-left: 5px;padding-right: 5px;">
+        <ion-col size="4">
+          Store Address
+        </ion-col>
+        <ion-col size="8" style="text-align:end">
+          {{currentOrder.storeInfo.branches[0].completeAddress}}
+          <!-- {{currentOrders?.deliveryAddress.completeAddress}}
+          {{currentOrders?.deliveryAddress.deliveryArea}} -->
+        </ion-col>
+      </ion-row>
+
+      <ng-container *ngFor="let ordItem of currentOrder.items">
+        <ng-container *ngIf="ordItem.variants ;else noVariant">
+          <ion-row *ngFor="let variant of ordItem.variants" style="padding-left: 5px;padding-right: 5px;">
+            <ion-col size="6">
+              {{variant.quantity}} x {{ordItem.productDetails.name}} {{ordItem.productDetails.variants[variant.variantIndex].variant_name}}
+            </ion-col>
+            <ion-col size="6" style="text-align:end">
+              {{variant.bulk_price ?? variant.quantity * ordItem.productDetails.variants[variant.variantIndex].price |currency: "PHP"}}
+            </ion-col>
+          </ion-row>
+        </ng-container>
+        <ng-template #noVariant>
+          <ion-row style="padding-left: 5px;padding-right: 5px;">
+            <ion-col size="6">
+              {{ordItem.quantity}} x {{ordItem.productDetails.name}}
+            </ion-col>
+            <ion-col size="6" style="text-align:end">
+              {{ordItem.bulk_price ?? ordItem.quantity * ordItem.price |currency: "PHP"}}
+            </ion-col>
+          </ion-row>
+        </ng-template>
+      </ng-container>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header style="padding: 10px;">
+        <ion-card-subtitle>Payment Summary</ion-card-subtitle>
+      </ion-card-header>
+
+      <div class="ion-padding">
+        <ng-container *ngIf="currentOrder.voucherInfo as voucherInfo;">
+          <ion-row>
+            <ion-col size="6">
+              Voucher ({{voucherInfo.voucherCode}})
+            </ion-col>
+            <ng-container *ngIf="voucherInfo.voucherDiscountType === 'flat'">
+              <ion-col size="6" style="text-align:end">
+                - {{voucherInfo.voucherDiscountValue | currency:"PHP"}}
+              </ion-col>
+            </ng-container>
+            <ng-container *ngIf="voucherInfo.voucherDiscountType === 'percentage'">
+              <ion-col size="6" style="text-align:end">
+                - {{voucherInfo.voucherDiscountValue}} %
+              </ion-col>
+            </ng-container>
+          </ion-row>
+        </ng-container>
+        <ng-container *ngIf="currentOrder.deliveryFeeDetails as deliveryFeeDetails">
+          <ion-row>
+            <ion-col size="6">
+              Delivery Fee
+            </ion-col>
+            <ng-container *ngIf="deliveryFeeDetails.calculated?.price as price">
+              <ng-container *ngIf="price === 'too_far'; else notFar">
+                <ion-col size="6" style="text-align:end">
+                  Pending From Store
+                </ion-col>
+              </ng-container>
+              <ng-template #notFar>
+                <ion-col size="6" style="text-align:end">
+                  {{price | currency:"PHP"}}
+                </ion-col>
+              </ng-template>
+              <!-- <ion-col size="6" style="text-align:end">
+                - {{voucherInfo.voucherDiscountValue | currency:"PHP"}}
+              </ion-col> -->
+            </ng-container>
+          </ion-row>
+        </ng-container>
+        <ion-row>
+          <ion-col size="6">
+            Total
+          </ion-col>
+          <ion-col size="6" style="text-align:end">
+            {{paymentData(currentOrder, true) + (currentOrder.deliveryFeeDetails?.calculated?.price >=0 ? currentOrder.deliveryFeeDetails?.calculated?.price : 0  ) |currency: "PHP"}}
+          </ion-col>
+        </ion-row>
+      </div>
+      <ng-container *ngIf="currentOrder.payPalData as payPalData">
+        <ion-card-header style="padding: 10px;">
+          <ion-card-subtitle>Paid via Paypal</ion-card-subtitle>
+        </ion-card-header>
+        <ion-item lines="none">
+          <ion-icon slot="start" name="logo-paypal"></ion-icon>
+          <ion-label>
+            <h4>
+              Transaction ID: {{payPalData.id}}
+            </h4>
+            <p >
+              Payed by: {{payPalData.payer.name.given_name}} {{payPalData.payer.name.surname}}
+            </p>
+          </ion-label>
+        </ion-item>
+
+      </ng-container>
+
+    </ion-card>
+
+    <ion-card *ngIf="currentOrder.specialInstructions as specialInstructions">
+      <ion-card-header>
+        <ion-card-subtitle> Special Instructions</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        {{specialInstructions}}
+      </ion-card-content>
+    </ion-card>
+
+
+    <ion-card *ngIf="currentOrder.status === 2.5">
+      <ion-card-header>
+        <ion-card-subtitle>Chat Rider</ion-card-subtitle>
+      </ion-card-header>
+      <ion-card-content>
+        <div style="max-height: 500px;overflow-y: scroll;">
+          <div *ngFor="let message of currentOrder.chat">
+            <div [ngClass]="{'client-message': message.from === 'client' ,'rider-message':message.from === 'rider' }">
+              {{message.message}}
+              <p>
+                {{message.timestamp | date : "MMM d, y, h:mm a"}}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <ion-item mode="md" fill="outline" style="padding-top: 20px;">
+          <ion-label position="floating">Send Message</ion-label>
+          <ion-input [formControl]="chatInput" (keyup.enter)="sendChat(currentOrder.id,currentOrder.chat)"></ion-input>
+          <ion-icon name="send-outline" slot="end" style="cursor: pointer;" (click)="sendChat(currentOrder.id,currentOrder.chat)"></ion-icon>
+        </ion-item>
+
+      </ion-card-content>
+
+    </ion-card>
+
+    <ion-card *ngIf="currentOrder.pickupImage">
+      <ion-card-content style="display: flex; flex-direction: column; align-items: center; ">
+        <h1>
+          Pickup Image
+        </h1>
+        <img [src]="currentOrder.pickupImage" style="max-height: 150px;">
+      </ion-card-content>
+
+    </ion-card>
+
+    <div style="display: flex; justify-content: center;">
+      <ion-button color="secondary" (click)="cancelOrder(currentOrder.id)" *ngIf="currentOrder.status ===  1">
+        CANCEL ORDER
+      </ion-button>
+    </div>
+
+  </ng-container>
+
+</ng-container>
+<ng-template #emptyCart>
+  <div style="display: flex; flex-direction: column; align-items: center; height: -webkit-fill-available; justify-content: center;">
+    <ion-img src="assets/icon/empty-cart.png" style="width: 35%;"></ion-img>
+    <h1>
+      Your Cart is Empty
+    </h1>
+
+  </div>
+</ng-template>

@@ -1,0 +1,38 @@
+
+ .invalid-input, .invalid-input *{
+    color: red ;
+    --border-color: red!important;
+  }
+
+  .offered, .offered *{
+    font-weight: bold;
+    color: var(--ion-color-secondary) ;
+    --border-color: var(--ion-color-secondary)!important;
+  }
+
+  
+  .store-message{
+    width: 70%;
+    display: inline-block;
+    padding:12px;
+    background-color: var(--ion-color-secondary);
+    border-radius: 10px;
+    color: white;
+    margin-bottom: 5px;
+}
+
+.offertotal{
+  color: var(--ion-color-secondary) ;
+}
+
+.client-message{
+    width: 70%;
+    margin-bottom: 5px;
+    margin-left: 30%;
+    text-align: end;
+    display: inline-block;
+    padding:12px;
+    background-color: var(--ion-color-primary);
+    border-radius: 10px;
+    color: white;
+}

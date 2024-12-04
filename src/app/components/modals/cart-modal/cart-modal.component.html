@@ -1,0 +1,295 @@
+<ion-header collapse="fade">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="dismiss()">
+        Dismiss
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Cart</ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <app-cart-details>
+
+  </app-cart-details>
+  <!-- <ng-container *ngIf=" (currentOrder$ | async) as currentOrder;else cartEmpty">
+
+    <ng-container *ngIf="currentOrder.status < 0">
+      <div>
+        Cancelled
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="currentOrder.status === 0">
+      <ion-card>
+        <ion-card-header style="display: flex; justify-content: space-between; padding-bottom: 0;">
+          <ion-card-subtitle>Delivery Address</ion-card-subtitle>
+          <ion-icon name="add-circle-outline"></ion-icon>
+        </ion-card-header>
+        <ion-card-content style="padding: 0;">
+          <ion-card style="margin-top: 10px;">
+            <ng-container *ngIf="addressSelection.value >= 0; else currLocation">
+              <app-map
+                [clientAddressPosition]="currentOrder.clientInfo.address[addressSelection.value].coordinates"
+                [draggable]="false"
+                [zoom]="15"
+                height="250px">
+              </app-map>
+            </ng-container>
+            <ng-template #currLocation>
+              <ng-container *ngIf="(currentAddress$ | async) as currentAddress;else noLocation">
+                <app-map [clientAddressPosition]="currentAddress.coordinates"
+                  [draggable]="false"
+                  [zoom]="15"
+                  height="250px">
+                </app-map>
+              </ng-container>
+              <ng-template #noLocation>
+               <ion-card-header>
+                <ion-card-title>No Location Found</ion-card-title>
+               </ion-card-header>
+              </ng-template>
+
+            </ng-template>
+          </ion-card>
+        </ion-card-content>
+
+          <ion-radio-group [formControl]="addressSelection">
+            <ion-item lines="none">
+              <ion-icon name="location-outline" slot="start"></ion-icon>
+              <ion-label>
+                <h2>
+                  Your Current Location
+                </h2>
+                <p style="font-size: 12px;">
+                  {{(currentAddress$ | async)?.completeAddress}}
+                </p>
+              </ion-label>
+              <ion-radio slot="end" [value]="-1" mode="md" color="dark"></ion-radio>
+            </ion-item>
+
+            <ion-item *ngFor="let addr of currentOrder.clientInfo.address; let i = index" lines="none">
+              <ion-icon name="compass-outline" slot="start"></ion-icon>
+              <ion-label>
+                <h2>
+                  {{addr.nickname}}
+                </h2>
+                <p style="font-size: 12px;">
+                  {{addr.deliveryArea}}
+                </p>
+              </ion-label>
+              <ion-radio slot="end" [value]="i" mode="md" color="dark"></ion-radio>
+            </ion-item>
+
+        </ion-radio-group>
+      </ion-card>
+
+      <ion-card>
+        <ion-card-header>
+          <ion-card-subtitle>Items</ion-card-subtitle>
+        </ion-card-header>
+
+
+        <ng-container *ngFor="let ord of currentOrder.items; let itemIndex = index">
+          <ng-container *ngIf="ord.variants;else noVariants">
+            <ion-item lines="none" *ngFor="let variant of ord.variants;let varInd = index">
+              <ion-icon name="fast-food-outline" size="small" slot="start"></ion-icon>
+              <div style="width: -webkit-fill-available; ">
+                <ion-row>
+                  <ion-col size="6" style="padding: 0; font-size: 12px; display: flex; align-items: center;">
+                    {{ord.productDetails.name}} {{ord.productDetails.variants[variant.variantIndex].variant_name}}
+                  </ion-col>
+                  <ion-col size="3" style="padding: 0; font-size: 12px; display: flex; align-items: center;">
+                    <ion-button (click)="quantityOperation(-1,currentOrder,itemIndex,varInd)" >
+                      -
+                    </ion-button>
+                    <div>
+                     {{variant.quantity}}
+                    </div>
+                    <ion-button (click)="quantityOperation(1,currentOrder,itemIndex,varInd)"  [disabled]="disableAddButtons(currentOrder,itemIndex,varInd)">
+                      +
+                    </ion-button>
+                  </ion-col>
+                  <ion-col size="3" style="padding: 0;font-size: 12px; display: flex; align-items: center; justify-content: flex-end; ">
+                    {{variant.price * variant.quantity  | currency: 'PHP'}}
+                  </ion-col>
+                </ion-row>
+              </div>
+            </ion-item>
+          </ng-container>
+          <ng-template #noVariants>
+            <ion-item lines="none">
+              <ion-icon name="fast-food-outline" size="small" slot="start"></ion-icon>
+              <div style="width: -webkit-fill-available; ">
+                <ion-row>
+                  <ion-col size="6" style="padding: 0; font-size: 12px; display: flex; align-items: center;">
+                    {{ord.productDetails.name}}
+                  </ion-col>
+                  <ion-col size="3" style="padding: 0; font-size: 12px; display: flex; align-items: center;">
+                    <ion-button (click)="quantityOperation(-1,currentOrder,itemIndex)">
+                      -
+                    </ion-button>
+                    <div>
+                     {{ord.quantity}}
+                    </div>
+                    <ion-button (click)="quantityOperation(1,currentOrder,itemIndex)" [disabled]="disableAddButtons(currentOrder,itemIndex)">
+                      +
+                    </ion-button>
+                  </ion-col>
+                  <ion-col size="3" style="padding: 0;font-size: 12px; display: flex; align-items: center; justify-content: flex-end; ">
+                    {{ord.price * ord.quantity| currency: 'PHP'}}
+                  </ion-col>
+                </ion-row>
+              </div>
+            </ion-item>
+          </ng-template>
+
+        </ng-container>
+        <div class="ion-padding" style="padding-top: 0; display: flex; justify-content: space-between;">
+          <h4>
+            Item Total
+          </h4>
+          <h4>
+            {{ paymentData(currentOrder) | currency: "PHP" }}
+          </h4>
+        </div>
+      </ion-card>
+
+      <ion-card>
+        <ion-list>
+          <ion-radio-group [formControl]="method">
+            <ion-list-header>
+              <ion-label>Method</ion-label>
+            </ion-list-header>
+            <ion-item lines="none">
+              <ion-icon name="cash-outline" slot="start" size="small"></ion-icon>
+              <ion-label>Cash On Delivery</ion-label>
+              <ion-radio value="cash" mode="md"></ion-radio>
+            </ion-item>
+            <ion-item lines="none">
+              <ion-icon name="card-outline" slot="start" size="small"></ion-icon>
+              <ion-label>Paypal</ion-label>
+              <ion-radio value="paypal" mode="md" disabled="true"></ion-radio>
+            </ion-item>
+          </ion-radio-group>
+        </ion-list>
+      </ion-card>
+
+      <ion-button (click)="null" expand="block" style="--background: #28a745;" [disabled]="!method.value" (click)="placeOrder(currentOrder.clientInfo.address,currentOrder)">
+        PLACE ORDER
+      </ion-button>
+
+
+    </ng-container>
+
+
+    <ng-container *ngIf="currentOrder?.status > 0">
+      <ion-card>
+        <ion-img *ngIf="currentOrder.status  <= 2; else mapView" src="https://i.pinimg.com/originals/fa/87/6f/fa876ffaf00c3a6645fe43a56aa10fe3.gif"></ion-img>
+        <ng-template #mapView>
+          <app-map
+            [clientAddressPosition]="currentOrder.deliveryAddress.coordinates"
+            [storePosition]="currentOrder.storeInfo.address.coordinates"
+            [riderPosition]="(riderLocation$ | async)!">
+          </app-map>
+        </ng-template>
+        <div style="text-align: center;">
+          <h2 style="margin-bottom: 0;">
+          {{getStatusResponse(currentOrder)}}
+          </h2>
+          <div style="padding-bottom: 5px;">
+            Est. Delivery Time: 15 - 20 mins.
+          </div>
+        </div>
+      </ion-card>
+
+      <ion-card>
+        <ion-card-header style="padding: 10px;">
+          <ion-card-subtitle>Order Details</ion-card-subtitle>
+        </ion-card-header>
+        <ion-row>
+          <ion-col size="4">
+            Store
+          </ion-col>
+          <ion-col size="8" style="text-align:end">
+            {{currentOrder.storeInfo.bname}}
+          </ion-col>
+        </ion-row>
+        <ion-row style="border-bottom: solid #c7adad;; border-width: thin;">
+          <ion-col size="4">
+            Store Address
+          </ion-col>
+          <ion-col size="8" style="text-align:end">
+            {{currentOrder.storeInfo.address.completeAddress}}
+          </ion-col>
+        </ion-row>
+
+        <ng-container *ngFor="let ordItem of currentOrder.items">
+          <ng-container *ngIf="ordItem.variants ;else noVariant">
+            <ion-row *ngFor="let variant of ordItem.variants">
+              <ion-col size="6">
+                {{variant.quantity}} x {{ordItem.productDetails.name}} {{ordItem.productDetails.variants[variant.variantIndex].variant_name}}
+              </ion-col>
+              <ion-col size="6" style="text-align:end">
+                {{variant.quantity * ordItem.productDetails.variants[variant.variantIndex].price |currency: "PHP"}}
+              </ion-col>
+            </ion-row>
+          </ng-container>
+          <ng-template #noVariant>
+            <ion-row>
+              <ion-col size="6">
+                {{ordItem.quantity}} x {{ordItem.productDetails.name}}
+              </ion-col>
+              <ion-col size="6" style="text-align:end">
+                {{ordItem.quantity * ordItem.price |currency: "PHP"}}
+              </ion-col>
+            </ion-row>
+          </ng-template>
+        </ng-container>
+
+      </ion-card>
+
+      <ion-card>
+        <ion-card-header style="padding: 10px;">
+          <ion-card-subtitle>Payment Summary</ion-card-subtitle>
+        </ion-card-header>
+        <ion-row>
+          <ion-col size="6">
+            Total
+          </ion-col>
+          <ion-col size="6" style="text-align:end">
+            {{paymentData(currentOrder)|currency: "PHP"}}
+          </ion-col>
+        </ion-row>
+      </ion-card>
+      <ion-card *ngIf="currentOrder.pickupImage">
+        <ion-card-content style="display: flex; flex-direction: column; align-items: center; ">
+          <h1>
+            Pickup Image
+          </h1>
+          <img [src]="currentOrder.pickupImage" style="max-height: 150px;">
+        </ion-card-content>
+
+      </ion-card>
+
+      <div style="display: flex; justify-content: center;">
+        <ion-button style="--background:#28a745;">
+          CANCEL ORDER
+        </ion-button>
+      </div>
+
+    </ng-container>
+
+
+
+  </ng-container>
+  <ng-template #cartEmpty>
+    <div>
+      Your Cart is Empty
+    </div>
+  </ng-template> -->
+
+
+
+
+</ion-content>

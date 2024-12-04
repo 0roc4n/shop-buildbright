@@ -1,0 +1,155 @@
+<!-- <ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-menu-button menu="menu-content"></ion-menu-button>
+     </ion-buttons> -->
+     <!-- <ion-icon slot="start" src="assets/icon/hardware_hq.svg" size="large"></ion-icon> -->
+    <!-- <ion-title>
+      {{(shopData$ | async)?.storeName}}
+    </ion-title> -->
+    <!-- <ion-buttons slot="end">
+      <ion-button (click)="openCart()">
+        <ion-icon name="cart-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons> -->
+  <!-- </ion-toolbar>
+  <ion-toolbar color="primary" (click)="filterSearch()">
+    <ion-searchbar placeholder="Search..."  style="padding: 0;"></ion-searchbar> (ionChange)="onSearchChange($event)" [debounce]="250" -->
+  <!-- </ion-toolbar>
+</ion-header> -->
+
+
+
+<ion-content scrollY="false">
+
+  <!-- <ion-header collapse="condense">
+    <ion-toolbar >
+      <ion-icon slot="start" src="assets/icon/hardware_hq.svg" size="large"></ion-icon>
+      <ion-title size="large">
+
+        <ng-container *ngIf="shopData$ | async; else loading">
+          {{(shopData$ | async)?.bname}}
+        </ng-container>
+        <ng-template #loading>
+          <ion-skeleton-text [animated]="true" style="height:44px; width: 75%;" ></ion-skeleton-text>
+        </ng-template>
+      </ion-title>
+    </ion-toolbar>
+  </ion-header>  -->
+
+  <ng-container >
+    <ion-header [style]="currentPage.value === '0'?'':'display:none'" class="ion-no-border" collapse="fade">
+          <ion-toolbar>
+            <ion-buttons slot="start">
+              <ion-menu-button autoHide="false"></ion-menu-button>
+            </ion-buttons>
+            
+            <ion-title>{{shopName}}</ion-title>
+
+            <ion-buttons slot="end">
+              <ion-button (click)="goToCart()">
+                <ion-icon name="cart-outline"></ion-icon>
+              </ion-button>
+            </ion-buttons>
+          </ion-toolbar>
+          <ion-toolbar>
+            <ion-searchbar (click)="filterSearch()"></ion-searchbar>
+          </ion-toolbar>
+        </ion-header>
+
+
+        <ion-content [style]="currentPage.value === '0'?'':'display:none'">
+          <ion-refresher  slot="fixed" (ionRefresh)="refresh($event)">
+            <ion-refresher-content></ion-refresher-content>
+          </ion-refresher>
+
+            <app-shop-page [allProducts]="(allProductItems$|async)" [productTtems]="(limitedProdItems$ | async)" [categories]="(categories$|async)" [shopData]="(shopData$ | async)">
+            </app-shop-page>
+      </ion-content>
+
+  </ng-container>
+
+
+  <ng-container >
+    <ion-header [style]="currentPage.value === '1'?'':'display:none'" class="ion-no-border" collapse="fade">
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-menu-button autoHide="false"></ion-menu-button>
+        </ion-buttons>
+        
+        <ion-title>Categories</ion-title>
+    
+    
+      </ion-toolbar>
+    
+    </ion-header>
+      <ion-content [style]="currentPage.value === '1'?'':'display:none'">
+        <ion-refresher  slot="fixed" (ionRefresh)="refresh($event)">
+          <ion-refresher-content></ion-refresher-content>
+        </ion-refresher>
+        <app-categories [categories]="(categories$|async)" [shopData]="(shopData$ | async)" >
+        </app-categories>
+        </ion-content>
+  </ng-container>
+
+  
+
+  <ng-container *ngIf="(allProductItems$ | async) as allProductItems">
+    <app-favorites [productTtems]="allProductItems" [shopData]="(shopData$ | async)" [style]="currentPage.value === '3'? '' : 'display:none' ">
+    </app-favorites>
+  </ng-container>
+
+  <!-- <ng-container *ngIf="currentPage.value === '4'" (click)="goToViewOrder()">
+    <app-cart-details></app-cart-details>
+  </ng-container> -->
+
+
+  <!-- <app-carts [style]="currentPage.value === '4' ? '' : 'display:none'">
+  </app-carts> -->
+
+  <app-profile [style]="currentPage.value === '5' ? '' : 'display:none'">
+  </app-profile>
+
+
+
+
+
+  <!-- <swiper-container #pageswiper class="page-swiper" (slidechange)="slidePageChange($event)" >
+    <swiper-slide style="  overflow-y: scroll;">
+
+    </swiper-slide>
+    <swiper-slide style="  overflow-y: scroll;">
+
+    </swiper-slide>
+    <swiper-slide style="  overflow-y: scroll;">
+
+    </swiper-slide>
+  </swiper-container> -->
+
+</ion-content>
+
+
+<ion-footer>
+  <ion-segment [scrollable]="true" [formControl]="currentPage" color="light">
+    <ion-segment-button [value]="0">
+      <ion-icon name="storefront-outline"></ion-icon>
+      <ion-label>Home</ion-label>
+    </ion-segment-button>
+    <ion-segment-button [value]="1">
+      <ion-icon name="albums-outline"></ion-icon>
+      <ion-label>Categories</ion-label>
+    </ion-segment-button>
+    <ion-segment-button [value]="3">
+      <ion-icon name="heart-outline"></ion-icon>
+      <ion-label>Favorite</ion-label>
+    </ion-segment-button>
+    <!-- <ion-segment-button [value]="4" color="light">
+      <ion-icon name="cart-outline"></ion-icon>
+      <ion-label>Cart</ion-label>
+    </ion-segment-button> -->
+    <ion-segment-button [value]="5" color="light">
+      <ion-icon name="person-outline"></ion-icon>
+      <ion-label>Profile</ion-label>
+    </ion-segment-button>
+  </ion-segment>
+</ion-footer>

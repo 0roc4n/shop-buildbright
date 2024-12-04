@@ -1,0 +1,120 @@
+
+  <ion-header>
+    <ion-toolbar color="primary">
+      <ion-buttons slot="start">
+        <ion-menu-button menu="menu-content"></ion-menu-button>
+       </ion-buttons>
+      <ion-title>
+        Reviews
+      </ion-title>
+    </ion-toolbar>
+    <ion-segment color="light" [value]="tab$ | async" (ionChange)="changeTab($event)">
+      <ion-segment-button [value]="0">
+        <ion-label>Add Review</ion-label>
+      </ion-segment-button>
+      <ion-segment-button [value]="1">
+        <ion-label>Your Reviews</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-header>
+
+<ion-content>
+
+
+
+  <swiper-container #pageswiper (slidechange)="swiperSlideChanged($event)">
+    <swiper-slide>
+      <!-- AAAAAA -->
+      <ng-container *ngFor="let boughtItems of boughtItems$ | async ">
+        <ng-container *ngIf="boughtItems.productDetails">
+          <!-- <ng-container *ngIf="boughtItems.productDetails.variants?.[boughtItems.variantIndex] as variant; else noVariant"> -->
+          <ng-container *ngIf="boughtItems.variants; else noVariant">
+            <ion-item button (click)="addReview(boughtItems)">
+              <ion-thumbnail slot="start">
+                <!-- <img [src]="variant.images[0].imageRef" /> -->
+                <img [src]="boughtItems.image" />
+                {{boughtItems.quantity}}
+              </ion-thumbnail>
+              <ion-label>
+                <h3>
+                  <!-- {{boughtItems.productDetails.name}} {{variant.variant_name}} -->
+                  {{boughtItems.productDetails.name}}<span *ngFor="let variant of boughtItems.variants">  {{variant.variant}}</span>
+                </h3>
+                <p>
+                </p>
+              </ion-label>
+            </ion-item>
+          </ng-container>
+          <ng-template #noVariant>
+            <ion-item button (click)="addReview(boughtItems)">
+              <ion-thumbnail slot="start">
+                <!-- <img [src]="boughtItems.productDetails.images[0].imageRef" /> -->
+                <img [src]="boughtItems.image" />
+              </ion-thumbnail>
+              <ion-label>
+                <h3>
+                  <!-- {{boughtItems.productDetails.name}} -->
+                  {{boughtItems.name}}
+                </h3>
+              </ion-label>
+            </ion-item>
+          </ng-template>
+        </ng-container>
+      </ng-container>
+    </swiper-slide>
+    <swiper-slide>
+      <ng-container *ngFor="let reviewedProduct of reviewedProducts$ | async ">
+        <ng-container *ngIf="reviewedProduct.productDetails">
+          <!-- <ng-container *ngIf="reviewedProduct.productDetails.variants?.[reviewedProduct.variantIndex] as variant; else noVariant"> -->
+            <ng-container *ngIf="reviewedProduct.variants; else noVariant">
+            <ion-item buttond (click)="viewReview(reviewedProduct)"> <!--(click)="addReview(boughtItems)"-->
+              <ion-thumbnail slot="start">
+                <!-- <img [src]="variant.images[0].imageRef" /> -->
+                <img [src]="reviewedProduct.image" />
+              </ion-thumbnail>
+              <ion-label>
+                <ion-row>
+                  <ion-col size="12">
+                    <h3>
+                      <!-- {{reviewedProduct.productDetails.name}} {{variant.variant_name}} -->
+                      {{reviewedProduct.productDetails.name}}<span *ngFor="let variant of reviewedProduct.variants">  {{variant.variant}}</span>
+                    </h3>
+                    <p>
+                      {{reviewedProduct.timestamp | date}}
+                    </p>
+                  </ion-col>
+                  <ion-col size="12">
+                    <app-review-icons [rating]="reviewedProduct.rating" [outOf]="5"></app-review-icons>
+                  </ion-col>
+                </ion-row>
+              </ion-label>
+            </ion-item>
+          </ng-container>
+          <ng-template #noVariant>
+            <ion-item button (click)="viewReview(reviewedProduct)"> <!--(click)="addReview(boughtItems)"-->
+              <ion-thumbnail slot="start">
+                <!-- <img [src]="reviewedProduct.productDetails.images[0].imageRef" /> -->
+                <img [src]="reviewedProduct.image" />
+              </ion-thumbnail>
+              <ion-label>
+                <ion-row>
+                  <ion-col size="12">
+                    <h3>
+                      {{reviewedProduct.productDetails.name}}
+                    </h3>
+                    <p>
+                      {{reviewedProduct.timestamp | date}}
+                    </p>
+                  </ion-col>
+                  <ion-col size="12">
+                    <app-review-icons [rating]="reviewedProduct.rating" [outOf]="5"></app-review-icons>
+                  </ion-col>
+                </ion-row>
+              </ion-label>
+            </ion-item>
+          </ng-template>
+        </ng-container>
+      </ng-container>
+    </swiper-slide>
+  </swiper-container>
+</ion-content>

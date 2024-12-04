@@ -1,0 +1,358 @@
+<!-- <ion-header class="ion-no-border" collapse="fade">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button autoHide="false"></ion-menu-button>
+    </ion-buttons>
+    
+    <ion-title>{{shopName}}</ion-title>
+
+    <ion-buttons slot="end">
+      <ion-button (click)="goToCart()">
+        <ion-icon name="cart-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-searchbar (click)="filterSearch()"></ion-searchbar>
+  </ion-toolbar>
+</ion-header>
+
+
+<ion-content> -->
+
+  <ion-slides #pageswiper class="page-swiper" slides-per-view="1" [options]="options"   pager>
+    <ng-container >
+    <ion-slide *ngFor="let ads of getAds(), let i = index">
+      <ion-img [src]="ads" style="height: 150px;margin-top: 0%; padding-top: 0%;"></ion-img>
+    </ion-slide>
+  </ng-container>
+
+  </ion-slides>
+  <!-- <swiper-container #pageswiper class="page-swiper" pagination="true" [autoplay]="{delay: 3000}">
+    <swiper-slide *ngFor="let ads of getAds(), let i = index">
+      <ion-img [src]="ads" style="height: 150px;margin-top: 0%; padding-top: 0%;"></ion-img>
+    </swiper-slide>
+  </swiper-container> -->
+
+<!-- ========================CATEGORIES======================== -->
+<div style="display: flex; flex-wrap: wrap; justify-content: space-evenly;">
+  <ng-container *ngIf="categories">
+    <ng-container *ngFor="let cat of showCat(categories); let i = index">
+      <ng-container *ngFor="let out of cat.out">
+        <ion-card style="margin: 10px; flex: 0 0 auto; text-align: center; box-shadow: none !important;" class="ion-activatable ripple-parent" (click)="filteredProduct(out.id, out.name)">
+          <ion-ripple-effect></ion-ripple-effect>
+          <ion-img  [src]="getIconByName(out)" style="object-fit: cover; width: 35px; height: 35px; margin: 0 auto;"></ion-img>
+          <p class="catText" style="max-width: 70px; margin: 5px auto;text-wrap: nowrap ;overflow: hidden; text-overflow: ellipsis;">{{out.name}}</p>
+        </ion-card>
+      </ng-container>
+      <ng-container *ngIf="seeRest">
+        <ng-container *ngFor="let out of cat.hide">
+          <ion-card style="margin: 10px; flex: 0 0 auto; text-align: center; box-shadow: none !important;" class="ion-activatable ripple-parent" (click)="filteredProduct(out.id, out.name)">
+            <ion-ripple-effect></ion-ripple-effect>
+            <ion-img [src]="getIconByName(out)" style="object-fit: cover; width: 35px; height: 35px; margin: 0 auto;"></ion-img>
+            <p class="catText" style="max-width: 70px; margin: 5px auto; white-space: normal; overflow: hidden; text-overflow: ellipsis;">{{out.name}}</p>
+          </ion-card>
+        </ng-container>
+      </ng-container>
+      <ion-card style="margin: 10px; flex: 0 0 auto; text-align: center; box-shadow: none !important;" class="ion-activatable ripple-parent" (click)="seeRest = !seeRest">
+        <ion-ripple-effect></ion-ripple-effect>
+        <ion-icon name="apps-outline" style="object-fit: cover; width: 35px; height: 35px; margin: 0 auto;"></ion-icon>
+        <p class="catText" style="max-width: 70px; margin: 5px auto; white-space: normal; overflow: hidden; text-overflow: ellipsis;">{{ seeRest ? 'See Less' : 'See More' }}</p>
+      </ion-card>
+    </ng-container>
+  </ng-container>
+</div>
+
+
+  <!-- ==============================BEST SELLERS=========================== -->
+  <ng-container *ngIf="(bestSeller$ | async) as bestSellers">
+  <ion-card *ngIf="bestSellers.length && bestSellers[0].productDetails" color="primary" style="margin:0; color:white; border-radius: 0;">
+    <p class="title"  >BEST SELLER</p>
+  </ion-card>
+    <!-- <ion-row  *ngIf="bestSellers.length"> -->
+
+      <swiper-container #pageswiper slides-per-view="2" [centeredSlides]="false">
+        <ng-container *ngFor="let bSeller of bestSellers">
+          <ng-container *ngIf="bSeller.productDetails as prod">
+            <swiper-slide>
+              <!-- <ion-col size="1"> -->
+                <ion-card (click)="productService.goToProductDetails(prod,shopData)" class="ion-activatable ripple-parent rectangle" style="margin: 3px;" color="white-space">
+                  <ion-ripple-effect></ion-ripple-effect>
+                  <ion-img [src]="getFirstImageRef(prod)" style="height: 180px"></ion-img>
+                  <ion-card-header>
+                    <div class="prodDetails">
+                      {{ prod.name }}
+                    </div>
+                    <div>
+                      {{ getMinMaxPrice(prod) }}
+                      <span *ngIf="prod.discount > 0" style="margin-left:5px; color: red !important; opacity: 70; font-size: small; background-color: rgb(255, 239, 239); font-weight: 200 ;border-radius: 10px ; padding :2px 6px">{{prod.discount}}%</span>
+                    </div>
+                    <app-review-icons [rating]="getAverageRating(prod)" [outOf]="5">
+                    </app-review-icons>
+                    <!-- <ng-container *ngIf="prod.variants?.colors?.[0].types?.[0] ?? prod.variants?.color?.[0] ?? prod.variants?.size?.[0] ?? prod.variants?.[0] as firstVariant; else noVariant">
+                      <app-review-icons [rating]="firstVariant.totalRating ?? 0" [outOf]="5">
+                      </app-review-icons>
+                    </ng-container>
+                    <ng-template #noVariant>
+                      <app-review-icons [rating]="prod.totalRating ?? 0" [outOf]="5">
+                      </app-review-icons>
+                    </ng-template> -->
+                 </ion-card-header>
+                </ion-card>
+              <!-- </ion-col> -->
+
+            </swiper-slide>
+          </ng-container>
+        </ng-container>
+      </swiper-container>
+    <!-- </ion-row> -->
+  </ng-container>
+
+  <!-- ==============================BEST SELLERS=========================== -->
+  <ng-container>
+    <ion-card color="primary" style="margin:0; color:white; border-radius: 0;">
+      <p class="title"  >LATEST PRODUCTS</p>
+    </ion-card>
+    <!-- <ion-row  *ngIf="bestSellers.length"> -->
+      <swiper-container #pageswiper slides-per-view="2" [centeredSlides]="false">
+        <ng-container *ngFor="let newProd of productTtems">
+          <ng-container *ngIf="newProd as prod">
+            <swiper-slide>
+              <!-- <ion-col size="1"> -->
+                <ion-card (click)="productService.goToProductDetails(prod,shopData)" class="ion-activatable ripple-parent rectangle" style="margin: 3px;" color="white-space">
+                  <ion-badge sty>New Product</ion-badge>
+                  <ion-ripple-effect></ion-ripple-effect>
+                  <ion-img [src]="getFirstImageRef(prod)" style="height: 180px"></ion-img>
+                  <ion-card-header>
+                    <div class="prodDetails">
+                      {{ prod.name }}
+                    </div>
+                    <div>
+                      {{ getMinMaxPrice(prod) }}
+                      <span *ngIf="prod.discount > 0" style="margin-left:5px; color: red !important; opacity: 70; font-size: small; background-color: rgb(255, 239, 239); font-weight: 200 ;border-radius: 10px ; padding :2px 6px">{{prod.discount}}%</span>
+                    </div>
+                    <app-review-icons [rating]="getAverageRating(prod)" [outOf]="5">
+                    </app-review-icons>
+                    <!-- <ng-container *ngIf="prod.variants?.colors?.[0].types?.[0] ?? prod.variants?.color?.[0] ?? prod.variants?.size?.[0] ?? prod.variants?.[0] as firstVariant; else noVariant">
+                      <app-review-icons [rating]="firstVariant.totalRating ?? 0" [outOf]="5">
+                      </app-review-icons>
+                    </ng-container>
+                    <ng-template #noVariant>
+                      <app-review-icons [rating]="prod.totalRating ?? 0" [outOf]="5">
+                      </app-review-icons>
+                    </ng-template> -->
+                 </ion-card-header>
+                </ion-card>
+              <!-- </ion-col> -->
+
+            </swiper-slide>
+          </ng-container>
+        </ng-container>
+      </swiper-container>
+    <!-- </ion-row> -->
+  </ng-container>
+
+  <!-- =================================RECOMMENDED=============================== -->
+  <!-- <ng-container>
+    <p class="title">NEW PRODUCTS</p>
+    <ion-row>
+      <ng-container *ngFor="let prod of productTtems">
+        <ion-col size="6">
+          <ion-card (click)="productService.goToProductDetails(prod, shopData)" class="ion-activatable ripple-parent rectangle" style="margin: 3px;" color="light">
+            <ion-ripple-effect></ion-ripple-effect>
+            <ion-img [src]="getFirstImageRef(prod)" style="height: 180px;"></ion-img>
+            <ion-card-header>
+              <div class="prodDetails">
+                {{ prod.name }}
+              </div>
+              <div>
+                {{ getMinMaxPrice(prod) }}
+              </div>
+              <ng-container *ngIf=" prod.variants?.colors?.[0].types?.[0] ?? prod.variants?.color?.[0] ?? prod.variants?.size?.[0]  ?? prod.variants?.[0] as firstVariant; else noVariant">
+                <app-review-icons [rating]="firstVariant.totalRating ?? 0" [outOf]="5">
+                </app-review-icons>
+              </ng-container>
+              <ng-template #noVariant>
+                <app-review-icons [rating]="prod.totalRating ?? 0" [outOf]="5">
+                </app-review-icons>
+              </ng-template>
+            </ion-card-header>
+          </ion-card>
+        </ion-col>
+      </ng-container>
+    </ion-row>
+  </ng-container> -->
+
+  <!-- =================================BULK ORDERS=================================== -->
+  <ion-button expand="full" color="secondary" (click)="routeBulks()">Bulk Orders? Click Here</ion-button>
+
+  <!-- =================================PAINTING=================================== -->
+  <ng-container *ngFor="let cat of categories">
+      <p class="title">{{ cat.name }}</p>
+      <swiper-container slides-per-view="2.5">
+        <swiper-slide *ngFor="let product of getProductsByCategoryId(cat.id)| slice:0:11; let i = index;">
+          <ion-card *ngIf="i < 10;else viewmore" (click)="productService.goToProductDetails(product, shopData)" class="ion-activatable ripple-parent rectangle" style="margin: 3px;" color="white-space">
+            <ion-ripple-effect></ion-ripple-effect>
+            <ion-img [src]="getFirstImageRef(product)" style="height: 150px;"></ion-img>
+            <ion-card-header>
+              <div class="prodDetails">
+                {{ product.name }}
+              </div>
+              <div>
+                {{ getMinMaxPrice(product) }}
+                <span *ngIf="product.discount > 0" style="margin-left:2px; color: red !important; opacity: 70; font-size: small; background-color: rgb(255, 239, 239); font-weight: 200 ;border-radius: 10px ; padding :2px 6px">{{product.discount}}%</span>
+              </div>
+              <app-review-icons [rating]="getAverageRating(product)" [outOf]="5">
+              </app-review-icons>
+              <!-- <ng-container *ngIf="product.variants?.colors?.[0].types?.[0]  ?? product.variants?.color?.[0] ?? product.variants?.size?.[0] ?? product.variants?.[0]  as firstVariant; else noVariant">
+                <app-review-icons [rating]="firstVariant.totalRating ?? 0" [outOf]="5">
+                </app-review-icons>
+              </ng-container>
+              <ng-template #noVariant>
+                <app-review-icons [rating]="product.totalRating ?? 0" [outOf]="5">
+                </app-review-icons>
+              </ng-template> -->
+            </ion-card-header>
+          </ion-card>
+
+          <ng-template #viewmore >
+            <ion-card (click)="filteredProduct(cat.id, cat.name)" class="ion-activatable ripple-parent rectangle " style="margin: 3px;" color="white-space">
+              <ion-ripple-effect></ion-ripple-effect>
+            <ion-img src="{{cat.image.imageRef}}" style="height: 180px;"></ion-img>
+            <ion-card-header>
+              <div class="prodDetails" style="display:flex; justify-content: center;align-items: center;">
+                VIEW MORE
+              </div>
+            </ion-card-header>
+            </ion-card>
+          </ng-template>
+        </swiper-slide>
+      </swiper-container>
+    </ng-container>
+
+    <!-- =================================Door and Cabinet Hardwares=================================== -->
+    <!-- <ng-container *ngFor="let name of categories">
+      <ng-container *ngIf="name.name === 'Door and Cabinet Hardwares'">
+        <p class="title">{{ name.name }}</p>
+        <swiper-container #pageswiper slides-per-view="2.5">
+          <swiper-slide *ngFor="let product of getProductsByCategoryId(name.id)">
+            <ion-card (click)="productService.goToProductDetails(product, shopData)" class="ion-activatable ripple-parent rectangle" style="margin: 3px;" color="white-space">
+              <ion-ripple-effect></ion-ripple-effect>
+              <ion-img [src]="getFirstImageRef(product)" style="height: 150px;"></ion-img>
+              <ion-card-header>
+                <div class="prodDetails">
+                  {{ product.name }}
+                </div>
+                <div>
+                  {{ getMinMaxPrice(product) }}
+                </div>
+                <ng-container *ngIf=" product.variants?.colors?.[0].types?.[0] ?? product.variants?.color?.[0] ?? product.variants?.size?.[0]  ?? product.variants?.[0] as firstVariant; else noVariant">
+                  <app-review-icons [rating]="firstVariant.totalRating ?? 0" [outOf]="5">
+                  </app-review-icons>
+                </ng-container>
+                <ng-template #noVariant>
+                  <app-review-icons [rating]="product.totalRating ?? 0" [outOf]="5">
+                  </app-review-icons>
+                </ng-template>
+              </ion-card-header>
+            </ion-card>
+          </swiper-slide>
+        </swiper-container>
+      </ng-container>
+    </ng-container> -->
+
+      <!-- =================================Lumber and Plywood=================================== -->
+  <!-- <ng-container *ngFor="let name of categories">
+    <ng-container *ngIf="name.name === 'Lumber and Plywood'">
+      <p class="title">{{ name.name }}</p>
+      <swiper-container #pageswiper slides-per-view="2.5">
+        <swiper-slide *ngFor="let product of getProductsByCategoryId(name.id)">
+          <ion-card (click)="productService.goToProductDetails(product, shopData)" class="ion-activatable ripple-parent rectangle" style="margin: 3px;" color="white-space">
+            <ion-ripple-effect></ion-ripple-effect>
+            <ion-img [src]="getFirstImageRef(product)" style="height: 150px;"></ion-img>
+            <ion-card-header>
+              <div class="prodDetails">
+                {{ product.name }}
+              </div>
+              <div>
+                {{ getMinMaxPrice(product) }}
+              </div>
+              <ng-container *ngIf="product.variants?.colors?.[0].types?.[0] ?? product.variants?.color?.[0] ?? product.variants?.size?.[0] ?? product.variants?.[0]  as firstVariant; else noVariant">
+                <app-review-icons [rating]="firstVariant.totalRating ?? 0" [outOf]="5">
+                </app-review-icons>
+              </ng-container>
+              <ng-template #noVariant>
+                <app-review-icons [rating]="product.totalRating ?? 0" [outOf]="5">
+                </app-review-icons>
+              </ng-template>
+            </ion-card-header>
+          </ion-card>
+        </swiper-slide>
+      </swiper-container>
+    </ng-container>
+  </ng-container> -->
+
+    <!-- =================================Concrete and Masonry=================================== -->
+    <!-- <ng-container *ngFor="let name of categories">
+      <ng-container *ngIf="name.name === 'Concrete and Masonry'">
+        <p class="title">{{ name.name }}</p>
+        <swiper-container #pageswiper slides-per-view="2.5">
+          <swiper-slide *ngFor="let product of getProductsByCategoryId(name.id)">
+            <ion-card (click)="productService.goToProductDetails(product, shopData)" class="ion-activatable ripple-parent rectangle" style="margin: 3px;" color="white-space">
+              <ion-ripple-effect></ion-ripple-effect>
+              <ion-img [src]="getFirstImageRef(product)" style="height: 150px;"></ion-img>
+              <ion-card-header>
+                <div class="prodDetails">
+                  {{ product.name }}
+                </div>
+                <div>
+                  {{ getMinMaxPrice(product) }}
+                </div>
+                <ng-container *ngIf=" product.variants?.colors?.[0].types?.[0]?? product.variants?.color?.[0] ?? product.variants?.size?.[0] ??  product.variants?.[0]  as firstVariant; else noVariant">
+                  <app-review-icons [rating]="firstVariant.totalRating ?? 0" [outOf]="5">
+                  </app-review-icons>
+                </ng-container>
+                <ng-template #noVariant>
+                  <app-review-icons [rating]="product.totalRating ?? 0" [outOf]="5">
+                  </app-review-icons>
+                </ng-template>
+              </ion-card-header>
+            </ion-card>
+          </swiper-slide>
+        </swiper-container>
+      </ng-container>
+    </ng-container> -->
+
+      <!-- =================================Screen & Coverings=================================== -->
+  <!-- <ng-container *ngFor="let name of categories">
+    <ng-container *ngIf="name.name === 'Screen & Coverings'">
+      <p class="title">{{ name.name }}</p>
+      <swiper-container #pageswiper slides-per-view="2.5">
+        <swiper-slide *ngFor="let product of getProductsByCategoryId(name.id)">
+          <ion-card (click)="productService.goToProductDetails(product, shopData)" class="ion-activatable ripple-parent rectangle" style="margin: 3px;" color="white-space">
+            <ion-ripple-effect></ion-ripple-effect>
+            <ion-img [src]="getFirstImageRef(product)" style="height: 150px;"></ion-img>
+            <ion-card-header>
+              <div class="prodDetails">
+                {{ product.name }}
+              </div>
+              <div>
+                {{ getMinMaxPrice(product) }}
+              </div>
+              <ng-container *ngIf="  product.variants?.colors?.[0].types?.[0]?? product.variants.color?.[0] ?? product.variants.size?.[0] ?? product.variants?.[0]  as firstVariant; else noVariant">
+                <app-review-icons [rating]="firstVariant.totalRating ?? 0" [outOf]="5">
+                </app-review-icons>
+              </ng-container>
+              <ng-template #noVariant>
+                <app-review-icons [rating]="product.totalRating ?? 0" [outOf]="5">
+                </app-review-icons>
+              </ng-template>
+            </ion-card-header>
+          </ion-card>
+        </swiper-slide>
+      </swiper-container>
+    </ng-container>
+  </ng-container>
+   -->
+  <iframe [src]="showVideo(videoUrl)" width="100%" height="250px" frameborder="0" allowfullscreen></iframe>
+<!-- </ion-content> -->

@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "errand-mate-ecom"
+  },
+  "targets": {
+    "errand-mate-ecom": {
+      "hosting": {
+        "client": [
+          "hardwareHQ"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

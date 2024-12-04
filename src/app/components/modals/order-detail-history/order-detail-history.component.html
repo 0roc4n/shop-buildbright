@@ -1,0 +1,457 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="dismissModal()">
+        <ion-icon slot="start" name="chevron-back-outline"></ion-icon>
+        Back
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Order Details</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-card class="status">
+    <h2 style="margin: 0; text-align:center;" class="ion-padding">
+      {{orderDetail.returnProductStatus? orderDetail.returnProductStatus ==1 ? 'Your Product Return Request is Pending' :'Your Product Return Request is Resolved' : status}}
+      <h4 style="margin: 0;" *ngIf="orderDetail.declineReason">
+        Reason: {{orderDetail.declineReason}}
+      </h4>
+    </h2>
+  </ion-card>
+<ion-card>
+  <h2 style="margin: 0;" class="ion-padding">
+    Store Details
+  </h2>
+
+  <ion-item lines="none">
+    <ion-avatar slot="start">
+      <ion-img [src]="orderDetail.storeDetails.profilePic === '' ?  'assets/icon/no-avatar.svg' : orderDetail.storeDetails.profilePic "></ion-img>
+    </ion-avatar>
+    <ion-label>
+      <h1>
+        {{orderDetail.storeDetails.storeName}}
+      </h1>
+    </ion-label>
+  </ion-item>
+  <ion-item lines="none">
+    <ion-icon slot="start" name="location-outline"></ion-icon>
+    <ion-label>
+      <h2>
+        {{orderDetail.storeDetails.branches[0].branch_name}}
+      </h2>
+      <p>
+        {{orderDetail.storeDetails.branches[0].completeAddress}}
+      </p>
+    </ion-label>
+  </ion-item>
+</ion-card>
+<ion-card>
+  <ion-row>
+    <ion-col size="6" style="display: flex; align-items: center; padding-left: 20px;">
+      <h2 style="margin: 0;" *ngIf="!returnToggleButton">
+        Product Details
+      </h2>
+    </ion-col>
+    <ng-container *ngIf="orderDetail.status >= 3">
+      <ng-container *ngIf="(returnProduct$ | async) as returnProduct">
+        <ion-col size="6" style="display: flex; justify-content: flex-end;" *ngIf="returnProduct === 'no_return' && orderDetail.returnProductStatus == null">
+          <ion-button (click)="returnToggleButton = !returnToggleButton" *ngIf="!returnToggleButton; else cancelButton">
+            Return Item/s
+          </ion-button>
+          <ng-template #cancelButton>
+            <ion-button (click)="pressCancelButton()">
+              Cancel
+            </ion-button>
+          </ng-template>
+        </ion-col>
+        <ion-col size="6" *ngIf="orderDetail.returnProductStatus == statEnum.Resolved" style="display: flex;justify-content: flex-end;">
+          <ion-button (click)="reopenReturn()">
+            Reopen Return
+          </ion-button>
+        </ion-col>
+      </ng-container>
+    </ng-container>
+  </ion-row>
+
+  <!-- Fix -->
+
+  <ion-list>
+    <ion-item *ngFor="let item of orderDetail.products" lines="none">
+      <ion-thumbnail slot="start">
+        <ion-img [src]="item.image"></ion-img>
+      </ion-thumbnail>
+      <ion-label>
+        <ng-container *ngIf="item.variants; else noVariant">
+          <h3>
+            {{item.name}} <span *ngFor="let variant of item.variants"> {{variant.variant}}</span> X {{item.quantity}}
+          </h3>
+        </ng-container>
+        <ng-template #noVariant>
+          {{item.name}} X {{item.quantity}}
+        </ng-template>
+        <p *ngIf="item.bulk_price as bulkPrice; else noBulkPrice">
+          Bulk Price: {{bulkPrice | currency: "PHP"}}
+        </p>
+        <ng-template #noBulkPrice>
+          <p >
+            {{item.price * item.quantity | currency: "PHP"}}
+          </p>
+        </ng-template>
+      </ion-label>
+      <ion-checkbox slot="end" mode="md" *ngIf="returnToggleButton" (ionChange)="selectReturnProduct($event, item)"></ion-checkbox>
+    </ion-item>
+  </ion-list>
+
+  <!-- /Fix -->
+
+  <!-- <ng-container *ngFor="let item of orderDetail.products">
+    <ion-list>
+      <ng-container *ngIf="item.variants; else noVariant">
+        <ion-item *ngFor="let variant of item.variants" lines="none">
+          <ng-container *ngIf="item.productDetails.variants.color != null; else notColor" >
+            <ion-thumbnail slot="start">
+              <ion-img [src]="item.productDetails.variants.color[variant.variantIndex].image[0].imageRef"></ion-img>
+              </ion-thumbnail>
+            <ion-label>
+              <h3>
+                {{item.productDetails.name}} {{item.productDetails.variants.color[variant.variantIndex].variant_name}} X {{variant.quantity}}
+              </h3>
+              <p *ngIf="variant.bulk_price as bulkPrice; else noBulkPrice">
+                Bulk Price: {{ bulkPrice  | currency: "PHP"}}
+              </p>
+              <ng-template #noBulkPrice>
+                <p>
+                  {{item.productDetails.variants.color[variant.variantIndex].price * variant.quantity | currency: "PHP"}}
+                </p>
+              </ng-template>
+            </ion-label>
+            <ion-checkbox slot="end" mode="md" *ngIf="returnToggleButton"  (ionChange)="selectReturnProduct($event, item.productId, item.productDetails,  variant.variantIndex )"></ion-checkbox>
+          </ng-container>
+          <ng-template #notColor>
+            <ion-thumbnail slot="start">W
+              <ion-img [src]="item.productDetails.variants[variant.variantIndex].images[0].imageRef"></ion-img>
+            </ion-thumbnail>
+            <ion-label>
+              <h3>
+                {{item.productDetails.name}} {{item.productDetails.variants[variant.variantIndex].variant_name}} X {{variant.quantity}}
+              </h3>
+              <p *ngIf="variant.bulk_price as bulkPrice; else noBulkPrice">
+                Bulk Price: {{ bulkPrice  | currency: "PHP"}}
+              </p>
+              <ng-template #noBulkPrice>
+                <p>
+                  {{item.productDetails.variants[variant.variantIndex].price * variant.quantity | currency: "PHP"}}
+                </p>
+              </ng-template>
+            </ion-label>
+            <ion-checkbox slot="end" mode="md" *ngIf="returnToggleButton"  (ionChange)="selectReturnProduct($event, item.productId, item.productDetails,  variant.variantIndex )"></ion-checkbox>
+          </ng-template>
+        </ion-item>
+      </ng-container>
+      <ng-template #noVariant>
+        <ion-item lines="none">
+          <ion-thumbnail slot="start">
+            <ion-img [src]="item.productDetails.images[0].imageRef"></ion-img>
+          </ion-thumbnail>
+          <ion-label>
+            <h3>
+              {{item.productDetails.name}} X {{item.quantity}}
+            </h3>
+            <p *ngIf="item.bulk_price as bulkPrice; else noBulkPrice">
+              Bulk Price: {{bulkPrice | currency: "PHP"}}
+            </p>
+            <ng-template #noBulkPrice>
+              <p >
+                {{item.price * item.quantity | currency: "PHP"}}
+              </p>
+            </ng-template>
+          </ion-label>
+          <ion-checkbox slot="end" mode="md" *ngIf="returnToggleButton" (ionChange)="selectReturnProduct($event, item.productId, item.productDetails )"></ion-checkbox>
+        </ion-item>
+      </ng-template>
+    </ion-list>
+  </ng-container> -->
+
+  <ion-item lines="{{!orderDetail.voucherInfo && orderDetail.deliveryMethod != 'delivery'  ?'':'none'}}"   *ngIf="orderDetail.paymentMethod == 'paypal'" style="margin-top: 5px;">
+    <ion-list class="ion-no-padding">
+      <ion-item style="padding-left: 0;margin-left: -22px;" lines="none">
+        <ion-icon name="logo-paypal" slot="start"></ion-icon>
+        <ion-label>
+          <h3 style="margin-bottom: 5px;">
+            Paid using Paypal
+          </h3>
+        </ion-label>
+      </ion-item>
+      <ion-item  style="padding-left: 0;margin-left: -22px;"  lines="none" *ngIf="orderDetail.paypalData.payer">
+        <ion-icon name="person-outline" slot="start"></ion-icon>
+        <ion-label>
+          <h3 style="margin-bottom: 5px;">
+            Account Name: {{orderDetail.paypalData.payer}}
+          </h3>
+        </ion-label>
+      </ion-item>
+
+      <ion-item  style="padding-left: 0;margin-left: -22px;"  lines="none">
+        <ion-icon name="mail-outline" slot="start"></ion-icon>
+        <ion-label>
+          <h3 style="margin-bottom: 5px;">
+            Email: {{orderDetail.paypalData.email}}
+          </h3>
+        </ion-label>
+      </ion-item>
+      
+      <ion-item  style="padding-left: 0;margin-left: -22px;"  lines="none">
+        <ion-icon name="receipt-outline" slot="start"></ion-icon>
+        <ion-label>
+          <h3 style="margin-bottom: 5px;">
+            Transaction ID: {{orderDetail.paypalData.transactionID}}
+          </h3>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+  </ion-item>
+  
+
+  <ion-item lines="{{!orderDetail.voucherInfo?'':'none'}}" *ngIf="orderDetail.deliveryMethod == 'delivery'">
+    <ion-icon name="car-outline" slot="start"></ion-icon>
+  <ion-label>
+      <h3 style="margin-bottom: 5px;">
+        Delivery Fee: {{orderDetail.deliveryFee | currency: "PHP"}} 
+      </h3>
+    </ion-label>
+  </ion-item>
+  <ion-item   *ngIf="orderDetail.voucherInfo as voucherDetails">
+    <ion-icon name="pricetags-outline" slot="start"></ion-icon>
+    <ion-label>
+      <h3 style="margin-bottom: 5px;">
+        Voucher ({{voucherDetails.voucherCode}})
+      </h3>
+      <h4 *ngIf="voucherDetails.voucherDiscountType === 'flat' ;else percentage ">
+        -{{voucherDetails.voucherDiscountValue | currency: "PHP"}}
+      </h4>
+      <ng-template #percentage>
+        - {{voucherDetails.voucherDiscountValue}} %
+      </ng-template>
+    </ion-label>
+  </ion-item>
+  <ion-item *ngIf="!returnToggleButton">
+    <ion-label style="text-align: end;">
+      <h2>
+        Total
+      </h2>
+      <h3>
+        {{ paymentData(orderDetail)  | currency: "PHP"}}
+      </h3>
+    </ion-label>
+  </ion-item>
+</ion-card>
+
+
+
+<ion-card *ngIf="returnArray.length">
+  <h2 class="ion-no-margin ion-padding">
+    Return Items
+  </h2>
+
+
+
+  <ng-container *ngFor="let returnProduct of returnArray; let prodIndex = index">
+    <ng-container *ngIf="returnProduct.variants; else noVariant">
+      <!-- <ng-container *ngFor="let variant of variantIndexArray; let vIndex = index"> -->
+        <ion-item lines="none">
+          <ion-thumbnail slot="start">
+            <ion-img [src]="returnProduct.image"></ion-img>
+          </ion-thumbnail>
+          <ion-label>
+            <h3>
+              {{returnProduct.name}}<span *ngFor="let variantName of returnProduct.variants"> {{variantName.variant}}</span>
+            </h3>
+          </ion-label>
+        </ion-item>
+        <ion-row>
+          <ion-col size="6" *ngFor="let pic of returnProduct.pictures; let picIndex = index" style="display: flex; justify-content: center;">
+            <div class="container">
+              <ion-icon name="close" class="close-icon" (click)="deleteImage(prodIndex,picIndex)"></ion-icon>
+              <ion-img [src]="pic" class="returnImage"></ion-img>
+            </div>
+          </ion-col>
+          <ion-col size="6" style="height: 150px;" (click)="getPicture(prodIndex)" class="ion-padding">
+            <div style=" display: flex; justify-content: center; align-items: center; flex-direction: column; height: 100%; border: solid thin;">
+              <ion-icon name="add-outline" size="large"></ion-icon>
+              Add Picture
+            </div>
+          </ion-col>
+        </ion-row>
+      <!-- </ng-container> -->
+    </ng-container>
+    <ng-template #noVariant>
+      <ion-item lines="none">
+        <ion-thumbnail slot="start">
+          <ion-img [src]="returnProduct.image"></ion-img>
+        </ion-thumbnail>
+        <ion-label>
+          <h3>
+            {{returnProduct.name}}
+          </h3>
+        </ion-label>
+      </ion-item>
+      <ion-row>
+        <ion-col size="6" *ngFor="let pic of returnProduct.pictures; let picIndex = index" style="display: flex; justify-content: center;">
+          <div class="container">
+            <ion-icon name="close" class="close-icon" (click)="deleteImage(prodIndex,picIndex)"></ion-icon>
+            <ion-img [src]="pic" class="returnImage"></ion-img>
+          </div>
+        </ion-col>
+        <ion-col size="6" style="height: 150px;" (click)="getPicture(prodIndex)" class="ion-padding">
+          <div style=" display: flex; justify-content: center; align-items: center; flex-direction: column; height: 100%; border: solid thin;">
+            <ion-icon name="add-outline" size="large"></ion-icon>
+            Add Picture
+          </div>
+        </ion-col>
+      </ion-row>
+    </ng-template>
+  </ng-container>
+  <div class="ion-padding">
+    <ion-item mode="md" fill="outline">
+      <ion-label position="floating">Message: </ion-label>
+      <ion-input [formControl]="returnMessageInput" ></ion-input>
+    </ion-item>
+  </div>
+
+  <ion-button (click)="null" [disabled]="disableReturnButton || !returnMessageInput.valid" expand="block" (click)="requestReturn()">
+    Return
+  </ion-button>
+</ion-card>
+  <ng-container *ngIf="orderDetail.status ==3">
+    <ng-container *ngIf="(returnProduct$ | async) as returnProduct">
+      <ion-card *ngIf="returnProduct !== 'no_return'">
+        <h2 class="ion-no-margin ion-padding">
+          Return Product
+        </h2>
+        <ng-container *ngFor="let prod of returnProduct.products">
+          <ng-container *ngIf="prod.variants; else noVariant">
+            <!-- <ng-container *ngFor="let variant of prod.variants"> -->
+              <ion-item lines="none">
+                <ng-container *ngIf="prod.variants">
+                  <ion-thumbnail slot="start">
+                    <img [src]="prod.image"/>
+                  </ion-thumbnail>
+                  <ion-label>{{prod.name}}<span *ngFor="let name of prod.variants"> {{name.variant}}</span></ion-label>
+                </ng-container>
+              </ion-item>
+              <ion-row>
+                <ion-col size="6" *ngFor="let returnImage of prod.pictures">
+                  <ion-img [src]="returnImage" class="returnImage"></ion-img>
+                </ion-col>
+              </ion-row>
+            <!-- </ng-container> -->
+          </ng-container>
+          <ng-template #noVariant>
+            <ion-item lines="none">
+              <ion-thumbnail slot="start">
+                <img [src]="prod.image" />
+              </ion-thumbnail>
+              <ion-label>{{prod.name}}</ion-label>
+            </ion-item>
+            <ion-row>
+              <ion-col size="6" *ngFor="let returnImage of prod.pictures">
+                <ion-img [src]="returnImage" class="returnImage"></ion-img>
+              </ion-col>
+            </ion-row>
+          </ng-template>
+        </ng-container>
+        <div class="ion-padding">
+          <h2 class="ion-no-margin ion-padding">
+            Chat
+          </h2>
+          <div style="max-height: 500px;overflow-y: scroll;">
+            <div *ngFor="let message of returnProduct.chat">
+              <div [ngClass]="{'client-message': message.from === 'client' ,'store-message': message.from === 'store' }">
+                {{message.message}}
+                <p>
+                  {{message.timestamp | date : "MMM d, y, h:mm a"}}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <ion-item mode="md" fill="outline" style="padding-top: 20px;" *ngIf="returnProduct.status === statEnum.Pending">
+            <ion-label position="floating">Send Message</ion-label>
+            <ion-input [formControl]="chatInput" (keyup.enter)="chatReturnProduct(returnProduct.chat)"></ion-input>
+            <ion-icon name="send-outline" slot="end" style="cursor: pointer;" (click)="chatReturnProduct(returnProduct.chat)"></ion-icon>
+          </ion-item>
+        </div>
+      </ion-card>
+    </ng-container>
+  </ng-container>
+
+  <ion-card *ngIf="orderDetail.message as specialInstructions">
+    <h2 style="margin: 0;" class="ion-padding">
+      Special Instructions
+    </h2>
+    <h4 style="margin: 0;" class="ion-padding">
+      {{specialInstructions}}
+    </h4>
+  </ion-card>
+
+<ion-card *ngIf="orderDetail.status === statEnum.OnDelivery">
+  <google-map [options]="mapOptions"  [zoom]="17" height="300px" width="100%" #mapRef >
+    <map-marker
+      [icon]="googleMapPins.storePin"
+      [position]="orderDetail.storeDetails.branches[0].coordinates"
+      #currentMarker="mapMarker">
+    </map-marker>
+
+    <map-marker
+      [icon]="googleMapPins.clientPin"
+      [position]="orderDetail.address.coordinates"
+      #currentMarker="mapMarker">
+    </map-marker>
+
+    <map-marker *ngIf="orderDetail.riderLoc"
+      [icon]="googleMapPins.riderPin"
+      [position]="orderDetail.riderLoc.coordinates"
+      #currentMarker="mapMarker">
+    </map-marker>
+  </google-map>
+</ion-card>
+<ion-card *ngIf="orderDetail.status === statEnum.OnDelivery">
+  <div class="ion-padding" >
+    <h2 class="ion-padding" style="margin: 0;">
+      Chat
+    </h2>
+    <div style="max-height: 500px;overflow-y: scroll;">
+      <div *ngFor="let message of orderDetail.chat">
+        <div [ngClass]="{'client-message': message.from === 'client' ,'store-message': message.from === 'rider' }">
+          {{message.message}}
+          <p>
+            {{message.timestamp | date : "MMM d, y, h:mm a"}}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <ion-item mode="md" fill="outline" style="padding-top: 20px;" >
+      <ion-label position="floating">Send Message</ion-label>
+      <ion-input [formControl]="chatInput" (keyup.enter)="chatRider(orderDetail)"></ion-input>
+      <ion-icon name="send-outline" slot="end" style="cursor: pointer;" (click)="chatRider(orderDetail)"></ion-icon>
+    </ion-item>
+  </div>
+</ion-card>
+
+<ion-card *ngIf="orderDetail.pickupImage || orderDetail.deliveryImage">
+  <ng-container *ngIf="orderDetail.pickupImage">
+    <h2 style="margin: 0;" class="ion-padding">
+      Pickup Image
+     </h2>
+     <ion-img [src]="orderDetail.pickupImage"></ion-img>
+  </ng-container>
+  <ng-container *ngIf="orderDetail.deliveryImage">
+    <h2 style="margin: 0;" class="ion-padding">
+      Delivery Image
+     </h2>
+     <ion-img class="ion-padding" [src]="orderDetail.deliveryImage"></ion-img>
+  </ng-container>
+</ion-card>
+</ion-content>

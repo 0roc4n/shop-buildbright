@@ -1,0 +1,53 @@
+<ion-header class="ion-no-border" collapse="fade">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button autoHide="false"></ion-menu-button>
+    </ion-buttons>
+    
+    <ion-title>Favorites</ion-title>
+
+    <ion-buttons slot="end">
+      <ion-button (click)="goToCart()">
+        <ion-icon name="cart-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ng-container>
+    <ion-row>
+      <ng-container *ngFor="let product of products">
+        <ion-col size="6">
+          <ion-card class="ion-activatable ripple-parent rectangle" style="margin: 3px;" color="light" (click)="goToProd(product)">
+            <ion-ripple-effect></ion-ripple-effect>
+            <ion-img [src]="product.images" style="height: 180px;"></ion-img>
+            <ion-card-header>
+              <div class="prodDetails">
+                {{product.name}}
+              </div>
+                <ion-row style="align-items: center;">
+                  <ion-col>
+                    <ion-text style="font-size: medium; text-align: left;">{{product.price}}</ion-text>
+                    <span *ngIf="product.discount > 0" style="margin-left:2px; color: red !important; opacity: 70; font-size: small; background-color: rgb(255, 239, 239); font-weight: 200 ;border-radius: 10px ; padding :2px 6px">{{product.discount}}%</span>
+                  </ion-col>
+                  <ion-col class="ion-text-end">
+                    <ion-icon size="large" [name]="product.state?'heart':'heart-outline'" (click)="deleteItem(product)" color="danger"></ion-icon>
+                  </ion-col>
+                </ion-row>
+              <!-- <ng-container *ngIf="prod.variants?.[0] as firstVariant; else noVariant">
+                <app-review-icons [rating]="firstVariant.totalRating ?? 0" [outOf]="5">
+                </app-review-icons>
+              </ng-container> -->
+              <!-- <ng-template #noVariant>
+                <app-review-icons [rating]="prod.totalRating ?? 0" [outOf]="5">
+                </app-review-icons>
+              </ng-template> -->
+            </ion-card-header>
+          </ion-card>
+        </ion-col>
+      </ng-container>
+    </ion-row>
+  </ng-container>
+
+</ion-content>

@@ -1,0 +1,77 @@
+<ion-header>
+  <ion-toolbar >
+    <ion-buttons slot="start">
+      <ion-button (click)="dismissModal()">
+        <ion-icon slot="start" name="chevron-back"></ion-icon>
+        Back
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+
+  <div>
+    <ion-item style="margin-top: 10px;" lines="none">
+ 
+      <!-- <ng-container *ngIf="completeProdDetails.productDetails.variants?.[completeProdDetails.variantIndex] as variant; else noVariant"> -->
+      <ng-container *ngIf="completeProdDetails.variants; else noVariant">
+        <ion-thumbnail slot="start">
+          <!-- <img [src]="variant.images[0].imageRef" /> -->
+          <img [src]="completeProdDetails.image" />
+        </ion-thumbnail>
+        <ion-label>
+          {{completeProdDetails.productDetails.name}}<span *ngFor="let variant of completeProdDetails.variants"> {{variant.variant}}</span>
+        </ion-label>
+      </ng-container>
+      <ng-template #noVariant>
+        <ion-thumbnail slot="start">
+          <!-- <img [src]="completeProdDetails.productDetails.images[0].imageRef" /> -->
+          <img [src]="completeProdDetails.image" />
+        </ion-thumbnail>
+        <ion-label>
+          {{completeProdDetails.productDetails.name}}
+        </ion-label>
+      </ng-template>
+    
+    </ion-item>
+  </div>
+
+
+  <div style="display: flex; flex-direction: column; align-items: center;" class="ion-padding">
+    
+    <h3 *ngIf="!reviewed; else hasReview">
+      Add Rating
+    </h3>
+   <ng-template #hasReview>
+    <h3>
+      Your rating
+    </h3>
+   </ng-template>
+    <ion-row>
+      <ion-col size="12">
+        <ng-container *ngFor="let rating of [1,2,3,4,5]">
+          <ng-container *ngIf="ratingAct >= rating ; else blankColor">
+            <ion-icon name="star" size="large" style="padding: 10px; color: gold;" (click)="reviewed?  null:changeRating(rating)"></ion-icon>
+          </ng-container>
+          <ng-template #blankColor>
+            <ion-icon name="star-outline" size="large" style="padding: 10px; color: gold;" (click)="reviewed?  null:changeRating(rating)"></ion-icon>
+          </ng-template>
+        </ng-container>
+      </ion-col>
+      
+    </ion-row>
+    <ion-row>
+      <ion-col size="12" *ngIf="ratingAct">
+        {{ratingAct}} / 5
+      </ion-col>
+    </ion-row>
+    <ion-item lines="none" style="padding-top: 20px; width: 100%;">
+      <ion-textarea [readonly]='reviewed' class="custom-textarea" placeholder="Write your Review" [autoGrow]="true" [formControl]="review"> </ion-textarea>
+    </ion-item>
+
+    <ion-button *ngIf="!reviewed" (click)="submitReview()" expand="block" [disabled]="!review.valid || ratingAct === 0">
+      Submit Review
+    </ion-button>
+  </div>
+
+</ion-content>

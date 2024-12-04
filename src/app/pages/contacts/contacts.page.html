@@ -1,0 +1,43 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button menu="menu-content"></ion-menu-button>
+     </ion-buttons>
+    <ion-title>Contacts</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-card>
+  <ion-list>
+    <ion-item>
+      <ion-label position="stacked">Name</ion-label>
+      <ion-input type="text" [readonly]="true" style="font-weight: bold;" color="secondary">Hardware Headquarters</ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-label position="stacked">Mobile Number</ion-label>
+      <ion-input type="tel" [readonly]="true" color="secondary">+63123456789</ion-input>
+    </ion-item>
+    
+    <ion-item>
+      <ion-label position="stacked">Email</ion-label>
+      <a href="https://mail.google.com/mail/?view=cm&to=yenabion@gmail.com" target="_blank" style="text-decoration: none;">
+        <ion-input type="email" [readonly]="true" color="secondary">sampleemail@email.com</ion-input>
+      </a>
+    </ion-item>
+    
+    <ion-item>
+      <ion-label position="stacked">Facebook Link</ion-label>
+      <a href="https://www.messenger.com/t/100075045948007" target="_blank" style="text-decoration: none;">
+        <ion-input type="url" [readonly]="true" color="secondary">Facebook Link</ion-input>
+      </a>
+    </ion-item>
+    
+  </ion-list>
+</ion-card>
+</ion-content>
+
+
+
+
+

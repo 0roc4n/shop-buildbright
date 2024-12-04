@@ -1,0 +1,20 @@
+<ion-grid>
+  <ion-row>
+    <ion-col size="6" *ngFor="let prod of productTtems">
+      <ion-card style="margin: 0;" (click)="productService.goToProductDetails(prod,shopData)" class="ion-activatable ripple-parent rectangle" color="secondary">
+        <ion-ripple-effect></ion-ripple-effect>
+        <ion-img [src]="getFirstImageRef(prod)" style="height: 180px;padding: 10px;"></ion-img>
+        <ion-card-header>
+          <div style="font-size: 15px;font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+            {{prod.name}}
+          </div>
+          <div>
+            {{getMinMaxPrice(prod)}}
+          </div>
+          <!-- <app-review-icons [rating]="4.5" [outOf]="5">
+          </app-review-icons> -->
+        </ion-card-header>
+      </ion-card>
+    </ion-col>
+  </ion-row>
+</ion-grid>

@@ -1,0 +1,247 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="shop"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Checkout</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+<ion-card>
+  <ion-card-header>
+    <ion-card-title>Order Details</ion-card-title>
+  </ion-card-header>
+  <ion-item lines="none">
+    <ion-icon [name]="method === 'delivery' ? 'car-outline' :'hand-right-outline'" slot="start"></ion-icon>
+    <ion-label>
+      <h2>
+        {{method | titlecase}}
+      </h2>
+      <p>
+        Method
+      </p>
+    </ion-label>
+  </ion-item>
+  <ion-item lines="none">
+    <ion-icon name="calendar-outline" slot="start"></ion-icon>
+    <ion-label>
+      <h2>
+        {{clientDeliveryDate | date}}
+      </h2>
+      <p>
+        Client Set Date
+      </p>
+    </ion-label>
+  </ion-item>
+  <ion-item *ngIf="address" lines="none">
+    <ion-icon name="location-outline" slot="start"></ion-icon>
+    <ion-label>
+      <h2>
+        {{address.completeAddress}}
+      </h2>
+      <p>
+        Delivery Address ({{deliveryFeeDetails.actualDistance.distance.text}})
+      </p>
+    </ion-label>
+  </ion-item>
+  <!-- <ion-item *ngIf="deliveryFeeDetails" lines="none">
+    <ion-icon name="cash-outline" slot="start"></ion-icon>
+    <ion-label>
+      <h2>
+        {{deliveryFeeDetails.calculated.price | currency:"PHP"}} ~
+      </h2>
+      <p>
+        Distance
+      </p>
+    </ion-label>
+  </ion-item>         -->
+
+</ion-card>
+
+<ng-container *ngIf="currentOrder$ | async as currentOrder">
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Items</ion-card-title>
+    </ion-card-header>
+    <ion-card-content class="ion-no-padding">
+      <ion-list>
+        <ng-container *ngFor="let item of currentOrder.items">
+          <ng-container *ngIf="item.variants as variants; else noVariant">
+            <ion-row *ngFor="let variant of variants" >
+              <ng-container *ngIf="item.productDetails.variants[variant.variantIndex] as variantDetails">
+                <ion-col size="8" class="ion-no-padding">
+                  <ion-item lines="none">
+                    <ion-thumbnail slot="start">
+                      <ion-img [src]="variantDetails.images[0].imageRef"></ion-img>
+                    </ion-thumbnail>
+                    <ion-label style="white-space: pre-wrap; display: block;">
+                      <h3>
+                        {{item.productDetails.name}} ({{variantDetails.variant_name}})
+                      </h3>
+                    </ion-label>
+                  </ion-item>
+                </ion-col>
+                <ion-col size="1"  class="ion-no-padding" style="display: flex; justify-content: center; align-items: center;">
+                  X {{variant.quantity}}
+                </ion-col>
+                <ion-col size="3"  style="display: flex; justify-content: center; align-items: center;">
+                  {{variant.quantity * variantDetails.price | currency:"PHP"}}
+                </ion-col>
+              </ng-container>
+            </ion-row>
+          </ng-container>
+          <ng-template #noVariant>
+            <ion-row>
+              <ion-col size="8" class="ion-no-padding">
+                <ion-item lines="none">
+                  <ion-thumbnail slot="start">
+                    <ion-img [src]="item.productDetails.images[0].imageRef"></ion-img>
+                  </ion-thumbnail>
+                  <ion-label style="white-space: pre-wrap; display: block;">
+                    <h3>
+                      {{item.productDetails.name}}
+                    </h3>
+                  </ion-label>
+                </ion-item>
+              </ion-col>
+              <ion-col size="1"  class="ion-no-padding" style="display: flex; justify-content: center; align-items: center;">
+                X {{item.quantity}}
+              </ion-col>
+              <ion-col size="3" style="display: flex; justify-content: center; align-items: center;">
+                {{item.quantity * item.productDetails.price | currency:"PHP"}}
+              </ion-col>
+            </ion-row>
+          </ng-template>
+        </ng-container>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+
+
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Payment Breakdown</ion-card-title>
+    </ion-card-header>
+    <ion-item lines="none">
+      <ion-icon name="pricetags-outline" slot="start"></ion-icon>
+      <ion-label style="display: flex; justify-content: space-between;">
+        <div>
+          Total cost of Items:
+        </div>
+        <div>
+          {{paymentData(currentOrder, false)| currency:"PHP"}}
+        </div>
+      </ion-label>
+    </ion-item>
+    <ion-item lines="none" *ngIf="currentOrder.voucherInfo as voucher">
+      <ion-icon name="receipt-outline" slot="start"></ion-icon>
+      <ion-label style="display: flex; justify-content: space-between;">
+        <div>
+          Voucher: {{voucher.voucherCode}}:
+        </div>
+        <div *ngIf="voucher.voucherDiscountType === 'flat'">
+          - {{voucher.voucherDiscountValue|currency:"PHP"}}
+        </div>
+        <div *ngIf="voucher.voucherDiscountType === 'percentage'">
+          - {{voucher.voucherDiscountValue}} %
+        </div>
+      </ion-label>
+    </ion-item>
+
+    <ion-item lines="none" *ngIf="deliveryFeeDetails">
+      <ion-icon name="pricetags-outline" slot="start"></ion-icon>
+      <ion-label style="display: flex; justify-content: space-between;">
+        <div>
+          Delivery fee:
+        </div>
+        <div *ngIf="deliveryFeeDetails.calculated.price === 'too_far'; else notFar">
+          Too Far: to be announced
+        </div>
+        <ng-template #notFar>
+          <div>
+            {{deliveryFeeDetails.calculated.price   | currency:"PHP"}}
+          </div>
+        </ng-template>
+      </ion-label>
+    </ion-item>
+
+
+    <ion-item lines="none">
+      <ion-label style="display: flex; justify-content: space-between;">
+        <h1>
+          Order Total:
+        </h1>
+        <h1 *ngIf="deliveryFeeDetails?.calculated.price === 'too_far'; else notFar">
+          {{paymentData(currentOrder, true) | currency:"PHP"}}
+        </h1>
+        <ng-template #notFar>
+          <h1>
+            {{ paymentData(currentOrder, true) + deliveryFeeDetails?.calculated.price ?? 0 | currency:"PHP"}}
+          </h1>
+        </ng-template>
+      </ion-label>
+    </ion-item>
+  </ion-card>
+
+  <ion-card >
+    <ion-card-header>
+      <ion-card-title>Payment Method</ion-card-title>
+    </ion-card-header>
+    <ion-row>
+      <ion-col size="12">
+        <ion-item lines="none">
+          <ion-icon slot="start" name="cash-outline"></ion-icon>
+          <ion-label>Cash on {{method | titlecase}}</ion-label>
+        </ion-item>
+        <ion-button (click)="placeOrder(currentOrder)" expand="block">
+          Place order now
+        </ion-button>
+      </ion-col>
+    </ion-row>
+
+
+    <ng-container *ngIf="payPalConfig$ | async as payPalConfig ">
+      <ion-row>
+        <ion-col size="12">
+          <h3 style="color: black; display: flex; justify-content: center;">
+            -- or --
+          </h3>
+        </ion-col>
+      </ion-row>
+
+      <ion-row>
+        <ion-col size="12">
+          <ion-item lines="none">
+            <ion-icon slot="start" name="logo-paypal"></ion-icon>
+            <ion-label>Order via Paypal</ion-label>
+          </ion-item>
+          <div class="ion-padding">
+            <ngx-paypal  [config]="payPalConfig"></ngx-paypal>
+          </div>
+
+        </ion-col>
+      </ion-row>
+    </ng-container>
+
+
+
+  </ion-card>
+
+</ng-container>
+
+
+
+
+
+<!-- <ion-button (click)="null" expand="block" style="--background: #28a745; bottom: 0; position: absolute; width: -webkit-fill-available;" [disabled]="true" (click)="null">
+  PLACE ORDER
+</ion-button> -->
+<!-- <ion-card style="background: #28a745; position: fixed; bottom: 0;width: -webkit-fill-available;" >
+  <div style="display: flex; justify-content: center; align-items: center; padding: 15px; color: white;">
+    PLACE ORDER
+  </div>
+</ion-card> -->
+
+</ion-content>
+
